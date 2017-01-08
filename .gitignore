@@ -4,3 +4,4 @@ dist/
 config.json
 clr/assets/images/*
 /logs/
+/id.json

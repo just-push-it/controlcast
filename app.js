@@ -11,6 +11,9 @@ const moment = require('moment');
 const spawn = require('child_process').spawn;
 const robot = require('robotjs');
 const logger = require('./logger')();
+const Woopra = require('woopra');
+const woopra = new Woopra('ControlCast.tv', {});
+const simpleflake = require('simpleflakes');
 
 
 // Squirrel Auto Update Handlers
@@ -79,6 +82,12 @@ let errorWindow = null; // Config load error window
 let portWindow = null; // Config load error window
 let config = null; // Main settings object
 let forceQuit = null; // Bool to force quit app from tray
+
+if (!fs.existsSync('./id.json')) {
+  const flakeBigNum = simpleflake.simpleflake().toString();
+  fs.writeFileSync('./id.json', JSON.stringify({ id: flakeBigNum }));
+}
+woopra.identify(require('./id.json').id).push();
 
 app.setAppUserModelId('com.squirrel.ControlCast.ControlCast');
 const configFile = path.normalize('../config.json'); // Set config file path
