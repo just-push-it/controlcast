@@ -17,10 +17,10 @@ const logger = require('./logger')();
 
 
 const target = path.basename(process.execPath);
-function runCommand(args, done) {
+function runCommand(args, callback) {
   const updateExe = path.resolve(path.dirname(process.execPath), '..', 'Update.exe');
   logger.debug('Spawning `%s` with args `%s`', updateExe, args);
-  spawn(updateExe, args, { detached: true }).on('close', done);
+  spawn(updateExe, args, { detached: true }).on('close', callback);
 }
 
 function handleStartupEvent() {
@@ -291,9 +291,13 @@ ipc.on('windows_auto_start', (e, data) => {
   config.app.auto_start = data; // Set option and save
   saveConfig();
   if (data) {
-    runCommand([`--createShortcut=${target}`, '--shortcut-locations=Startup']);
+    runCommand([`--createShortcut=${target}`, '--shortcut-locations=Startup'], () => {
+      // Do Nothing
+    });
   } else {
-    runCommand([`--removeShortcut=${target}`, '--shortcut-locations=Startup']);
+    runCommand([`--removeShortcut=${target}`, '--shortcut-locations=Startup'], () => {
+      // Do Nothing
+    });
   }
 });
 
