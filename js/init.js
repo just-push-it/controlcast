@@ -101,25 +101,25 @@ function set(obj, str, val) {
     return obj[str.shift()] = val;
 }
 
-function connectToLaunchpad() { //Attempt to connect to the Launchpad Mini
+function connectToLaunchpad() { //Attempt to connect to the Launchpad
     let midiIn = new midi.input(); //Create new Midi input
     let midiOut = new midi.output(); //Create new Midi output
     let midiInCount = midiIn.getPortCount(); //Gets the number of Midi input ports connected
     let midiOutCount = midiOut.getPortCount(); //Gets the number of Midi output ports connected
-    if (midiInCount <= 0 || midiOutCount <= 0) return console.log("No Midi devices found. Have you plugged the Launchpad Mini in yet?");
+    if (midiInCount <= 0 || midiOutCount <= 0) return console.log("No Midi devices found. Have you plugged in the Launchpad Device yet?");
     let midiInPort;
     let midiOutPort;
     for (let i = 0; i < midiInCount; i++) { //Loop through Midi input ports
-        if (midiIn.getPortName(i).toLowerCase().indexOf("launchpad mini") != -1) {
+        if (midiIn.getPortName(i).toLowerCase().includes("launchpad")) {
             midiInPort = i; //Save index of Launchpad input port if found
         }
     }
     for (let i = 0; i < midiOutCount; i++) { //Loop through Midi output ports
-        if (midiOut.getPortName(i).toLowerCase().indexOf("launchpad mini") != -1) {
+        if (midiOut.getPortName(i).toLowerCase().includes("launchpad")) {
             midiOutPort = i; //Save index of Launchpad output port if found
         }
     }
-    if (!midiInPort && !midiOutPort) return console.log("Launchpad Mini not found. Is it unplugged?");
+    if (!midiInPort && !midiOutPort) return console.log("Launchpad Device not found. Is it unplugged?");
     launchpad = new launchpadder(midiInPort, midiOutPort); //Connect to launchpad
     if (launchpad) {
         console.log("Launchpad connection successful");
@@ -133,12 +133,12 @@ function connectToLaunchpad() { //Attempt to connect to the Launchpad Mini
             keyEvent('midi', [button.x, button.y], 'release'); //Pass to key event handler
         });
     } else {
-        console.log("Unable to connect to the Launchpad Mini");
+        console.log("Unable to connect to the Launchpad Device");
     }
 }
 
 usbDetect.on('add', device => {
-    if (device.deviceName.toLowerCase() == "launchpad mini") { //Launchpad USB was inserted
+    if (device.deviceName.toLowerCase().includes("launchpad")) { //Launchpad USB was inserted
         console.log('Launchpad USB detected. Connecting in 4 seconds');
         if (!usbConnected) { //This stops the random occurrence of the add event firing twice rapidly
             usbConnected = true;
@@ -151,7 +151,7 @@ usbDetect.on('add', device => {
 });
 
 usbDetect.on('remove', device => {
-    if (device.deviceName.toLowerCase() == "launchpad mini") { //Launchpad USB was removed
+    if (device.deviceName.toLowerCase().includes("launchpad")) { //Launchpad USB was removed
         console.log("Launchpad USB disconnected");
         if (reconnectTimer) clearTimeout(reconnectTimer); //Stop reconnect timer if it was started
         usbConnected = false;
