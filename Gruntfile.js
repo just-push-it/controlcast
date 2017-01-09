@@ -20,7 +20,7 @@ module.exports = (grunt) => {
             ignore: '^/.idea|^/build|^/dist|^/node_modules/(electron-*|' +
             'grunt|grunt-*|rmdir)|^/Gruntfile.js|^/clr/assets/images/*',
             dir: '.',
-            out: './build',
+            out: `./build/${appVersion}`,
             name: 'ControlCast',
             version: electronVersion,
             overwrite: true,
@@ -47,7 +47,7 @@ module.exports = (grunt) => {
     },
     'create-windows-installer': {
       ia32: {
-        appDirectory: `./build/ControlCast-win32-ia32`,
+        appDirectory: `./build/${appVersion}/ControlCast-win32-ia32`,
         outputDirectory: './dist/win32/x86',
         exe: `ControlCast.exe`,
         authors: 'DBKynd',
@@ -55,12 +55,12 @@ module.exports = (grunt) => {
         iconUrl: 'https://raw.githubusercontent.com/dbkynd/controlcast/master/images/icon.ico',
         setupIcon: './app/images/icon.ico',
         noMsi: true,
-        remoteReleases: `${releaseUrl}`, // /win32/x86`,
+        // remoteReleases: `${releaseUrl}/win32/x86`,
         certificateFile: '../DBKynd.pfx',
         certificatePassword: certPassword,
       },
       x64: {
-        appDirectory: `./build/ControlCast-win32-x64`,
+        appDirectory: `./build/${appVersion}/ControlCast-win32-x64`,
         outputDirectory: './dist/win32/x64',
         exe: `ControlCast.exe`,
         authors: 'DBKynd',
@@ -77,10 +77,37 @@ module.exports = (grunt) => {
       './build/',
       './dist/',
     ],
+
+    aws: grunt.file.readJSON('./awsCreds.json'),
+    aws_s3: {
+      options: {
+        accessKeyId: '<%= aws.AWSAccessKeyId %>',
+        secretAccessKey: '<%= aws.AWSSecretKey %>',
+      },
+      upload: {
+        files: [
+          {
+            expand: true, cwd: `./dist/win32/x86/`, src: [
+            `ControlCast-${appVersion}-delta.nupkg`,
+            `ControlCast-${appVersion}-full.nupkg`,
+            'RELEASES',
+          ], dest: `controlcast2/win32/x86/`,
+          },
+          {
+            expand: true, cwd: `./dist/win32/x64/`, src: [
+            `ControlCast-${appVersion}-delta.nupkg`,
+            `ControlCast-${appVersion}-full.nupkg`,
+            'RELEASES',
+          ], dest: `controlcast2/win32/x64/`,
+          },
+        ],
+      },
+    },
   });
   grunt.loadNpmTasks('grunt-electron-packager');
   grunt.loadNpmTasks('grunt-electron-installer');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-aws-s3');
 
   grunt.registerTask('rebuild_ia32', [
     'shell:rebuild:ia32:robotjs',
@@ -112,6 +139,10 @@ module.exports = (grunt) => {
   grunt.registerTask('rename', 'Rename the Setup.exe file after building installer.', (platform, arch) => {
     fs.rename(`./dist/win32/${arch}/Setup.exe`, `./dist/win32/${arch}/ControlCast_${appVersion}_${arch}.exe`);
   });
+
+  grunt.registerTask('upload', [
+    'aws_s3:upload',
+  ]);
 
   grunt.registerTask('default', [
     'clean',
