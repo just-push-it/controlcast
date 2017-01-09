@@ -3,6 +3,7 @@ const fs = require('fs');
 const appVersion = require('./package.json').version;
 const electronVersion = require('./package.json').devDependencies.electron.replace('^', '');
 const releaseUrl = require('./package.json').releaseUrl;
+const certPassword = require('../CodeSigningPassword.json').password;
 
 module.exports = (grunt) => {
   require('load-grunt-tasks')(grunt);
@@ -47,32 +48,33 @@ module.exports = (grunt) => {
     'create-windows-installer': {
       ia32: {
         appDirectory: `./build/ControlCast-win32-ia32`,
-        outputDirectory: './dist',
+        outputDirectory: './dist/win32/x86',
         exe: `ControlCast.exe`,
         authors: 'DBKynd',
         loadingGif: './loading.gif',
         iconUrl: 'https://raw.githubusercontent.com/dbkynd/controlcast/master/images/icon.ico',
         setupIcon: './app/images/icon.ico',
         noMsi: true,
-        remoteReleases: releaseUrl,
+        remoteReleases: `${releaseUrl}`, // /win32/x86`,
         certificateFile: '../DBKynd.pfx',
-        certificatePassword: require('../CodeSigningPassword.json').password,
+        certificatePassword: certPassword,
       },
       x64: {
         appDirectory: `./build/ControlCast-win32-x64`,
-        outputDirectory: './dist',
+        outputDirectory: './dist/win32/x64',
         exe: `ControlCast.exe`,
         authors: 'DBKynd',
         loadingGif: './loading.gif',
         iconUrl: 'https://raw.githubusercontent.com/dbkynd/controlcast/master/images/icon.ico',
         setupIcon: './app/images/icon.ico',
         noMsi: true,
-        remoteReleases: releaseUrl,
+        remoteReleases: `${releaseUrl}`, // /win32/x64`,
         certificateFile: '../DBKynd.pfx',
-        certificatePassword: require('../CodeSigningPassword.json').password,
+        certificatePassword: certPassword,
       },
     },
     clean: [
+      './build/',
       './dist/',
     ],
   });
@@ -100,7 +102,7 @@ module.exports = (grunt) => {
   ]);
   grunt.registerTask('createInstaller_ia32', [
     'create-windows-installer:ia32',
-    'rename:win32:ia32',
+    'rename:win32:x86',
   ]);
   grunt.registerTask('createInstaller_x64', [
     'create-windows-installer:x64',
@@ -108,7 +110,7 @@ module.exports = (grunt) => {
   ]);
 
   grunt.registerTask('rename', 'Rename the Setup.exe file after building installer.', (platform, arch) => {
-    fs.rename('./dist/Setup.exe', `./dist/ControlCast_${appVersion}_${arch}.exe`);
+    fs.rename(`./dist/win32/${arch}/Setup.exe`, `./dist/win32/${arch}/ControlCast_${appVersion}_${arch}.exe`);
   });
 
   grunt.registerTask('default', [

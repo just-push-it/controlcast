@@ -199,7 +199,7 @@ function loadTracks() { // Load track data to array
   }
 }
 
-autoUpdater.setFeedURL(releaseUrl);
+autoUpdater.setFeedURL(`${releaseUrl}/${process.platform}/${process.arch}`);
 setInterval(() => {
   checkForUpdates();
 }, 1000 * 60 * 15);
