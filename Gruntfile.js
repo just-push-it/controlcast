@@ -8,7 +8,7 @@ module.exports = (grunt) => {
     pkg: grunt.file.readJSON('package.json'),
     'create-windows-installer': {
       ia32: {
-        appDirectory: './dist/ControlCast-win32-ia32',
+        appDirectory: './dist/ControlCast-win32-x64',
         outputDirectory: './dist',
         authors: 'DBKynd',
         exe: 'ControlCast.exe',
@@ -25,7 +25,9 @@ module.exports = (grunt) => {
   grunt.loadNpmTasks('grunt-electron-installer');
 
   grunt.registerTask('post', 'Rename the Setup.exe file after building installer.', () => {
-    fs.rename('./dist/Setup.exe', `./dist/ControlCast-${version}-Setup.exe`);
+    fs.rename('./dist/Setup.exe', `./dist/ControlCast-${version}-Setup.exe`, () => {
+      // Do Nothing
+    });
   });
 
   grunt.registerTask('default', ['create-windows-installer', 'post']);
