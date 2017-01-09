@@ -85,14 +85,8 @@ let portWindow = null; // Config load error window
 let config = null; // Main settings object
 let forceQuit = null; // Bool to force quit app from tray
 
-if (!fs.existsSync('./id.json')) {
-  const flakeBigNum = simpleflake.simpleflake().toString();
-  fs.writeFileSync('./id.json', JSON.stringify({ id: flakeBigNum }));
-}
-woopra.identify(require('./id.json').id).push();
-
 app.setAppUserModelId('com.squirrel.ControlCast.ControlCast');
-const configFile = path.normalize('../config.json'); // Set config file path
+const configFile = path.join(process.cwd(), '../config.json'); // Set config file path
 robot.setKeyboardDelay(50); // Set delay for each keypress for OBS
 
 global.app_version = app.getVersion(); // Store app version for in app displays
@@ -126,6 +120,7 @@ function getDefaultConfig() { // Returns the default config object
   return {
     app: {
       version: 2,
+      id: simpleflake.simpleflake().toString(),
       pos: {
         x: null,
         y: null,
@@ -146,6 +141,7 @@ function getDefaultConfig() { // Returns the default config object
 
 
 function createMainWindow() { // Loads main application window
+  woopra.identify(config.app.id).push();
   mainWindow = new BrowserWindow({ // Main window options
     x: config.app.pos.x,
     y: config.app.pos.y,

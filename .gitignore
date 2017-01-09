@@ -3,4 +3,3 @@ node_modules/
 dist/
 clr/assets/images/*
 /logs/
-/id.json
