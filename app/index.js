@@ -119,7 +119,7 @@ app.on('ready', () => { // Application has finished loading
 function getDefaultConfig() { // Returns the default config object
   return {
     app: {
-      version: 2,
+      version: 3,
       id: simpleflake.simpleflake().toString(),
       pos: {
         x: null,
@@ -359,6 +359,8 @@ function checkConfigVer() {
     save = true;
     switch (config.app.version) {
       case 2:
+        config.app.id = simpleflake.simpleflake().toString();
+        config.app.version = 3;
         break;
       default:
       // Do Nothing
