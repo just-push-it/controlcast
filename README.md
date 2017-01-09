@@ -1,10 +1,15 @@
 #ControlCast
-A Launchpad Mini desktop application for streamers
+A Launchpad desktop application for streamers
 
 <img src="http://dbkynd.com/l/3KIwh" width="400">
 
 ##What does it do?
-ControlCast allows you to take control of your broadcast with the Launchpad Mini with hotkeys.
+ControlCast allows you to take control of your broadcast with a Launchpad Controller with hotkeys.
+
+## What Launchpad Devices work with ControlCast?
+* Launchpad Mini
+* Launchpad S
+* Launchpad MK1
 
 ##How does it work?
 Most streaming software (OBS, XSplit) let you bind hotkeys to perform certain tasks when streaming to services like Twitch. Tasks like Start/Stop the stream, switching scenes, and muting your microphone. And 3rd party voice services often offer 'toggle to mute' or 'hold to mute' keybinds. (Discord, Skype, Teamspeak)
