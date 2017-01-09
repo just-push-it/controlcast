@@ -64,9 +64,6 @@ ipc.on('config', (e, data) => { // Sent from main app on DOM ready. Sends the cu
 });
 
 $(document).ready(() => { // On DOM ready
-  $('body').fadeIn(200);
-  isMidiConnected(); // Set midi_connected on load
-
   for (let c = 0; c < 8; c++) { // Creates the top row key divs
     const newDiv = document.createElement('div');
     newDiv.setAttribute('class', 'key round OFF');
@@ -90,6 +87,9 @@ $(document).ready(() => { // On DOM ready
     newDiv.setAttribute('data-color', 'OFF');
     $('.launchpad .keys_side').append(newDiv);
   }
+
+  $('body').fadeIn(200);
+  isMidiConnected(); // Set midi_connected on load
 
   $('#update_available').click(() => {
     ipc.send('quit_and_install');

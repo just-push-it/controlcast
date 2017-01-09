@@ -2,16 +2,19 @@
   "name": "ControlCast",
   "version": "0.3.0",
   "description": "ControlCast",
-  "main": "app.js",
+  "main": "./app",
   "scripts": {
-    "start": "electron ."
+    "start": "electron ./app"
   },
   "author": "DBKynd",
   "devDependencies": {
     "electron": "^1.4.13",
+    "electron-builder": "^11.2.0",
     "electron-packager": "^8.4.0",
+    "electron-rebuild": "^1.5.5",
     "grunt": "^1.0.1",
-    "grunt-electron-installer": "^2.1.0"
+    "grunt-electron-installer": "^2.1.0",
+    "load-grunt-tasks": "^3.5.2"
   },
   "dependencies": {
     "express": "^4.14.0",

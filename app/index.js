@@ -89,8 +89,8 @@ app.setAppUserModelId('com.squirrel.ControlCast.ControlCast');
 const configFile = path.join(process.cwd(), '../config.json'); // Set config file path
 robot.setKeyboardDelay(50); // Set delay for each keypress for OBS
 
-global.app_version = app.getVersion(); // Store app version for in app displays
-global.release_url = require('./package.json').releaseUrl; // Store releaseUrl for update queries
+global.app_version = require('../package.json').version; // Store app version for in app displays
+global.release_url = require('../package.json').releaseUrl; // Store releaseUrl for update queries
 
 app.on('window-all-closed', () => { // Quit when all windows are closed.
   if (process.platform !== 'darwin') app.quit();

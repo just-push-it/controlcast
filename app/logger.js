@@ -5,7 +5,7 @@ const fs = require('fs');
 require('winston-loggly-bulk');
 
 module.exports = () => {
-  const logDir = './logs';
+  const logDir = '../logs';
 
   // Create log directory if it does not exist
   if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
