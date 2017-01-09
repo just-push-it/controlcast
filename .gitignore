@@ -1,5 +1,7 @@
 .idea/
 node_modules/
-dist/
-config.json
+/dist/
 clr/assets/images/*
+/logs/
+/build/
+/awsCreds.json

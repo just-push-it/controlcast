@@ -21,3 +21,6 @@ Edit individual midi keys to:
 * WARNING: Reinstalling via the Setup.exe file will override the config file.
 
 Artwork and beta testing by Annemunition
+
+Woopra is used for anylitics. No personal information is gathered. I'm mostly just curious how many ControlCast are out there in the world.
+It will also let me see what features are most/least used in the app. Pretty neat.
