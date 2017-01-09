@@ -55,7 +55,7 @@ module.exports = (grunt) => {
         iconUrl: 'https://raw.githubusercontent.com/dbkynd/controlcast/master/images/icon.ico',
         setupIcon: './app/images/icon.ico',
         noMsi: true,
-        // remoteReleases: `${releaseUrl}/win32/x86`,
+        remoteReleases: `${releaseUrl}/win32/x86`,
         certificateFile: '../DBKynd.pfx',
         certificatePassword: certPassword,
       },
@@ -68,7 +68,7 @@ module.exports = (grunt) => {
         iconUrl: 'https://raw.githubusercontent.com/dbkynd/controlcast/master/images/icon.ico',
         setupIcon: './app/images/icon.ico',
         noMsi: true,
-        remoteReleases: `${releaseUrl}`, // /win32/x64`,
+        remoteReleases: `${releaseUrl}/win32/x64`,
         certificateFile: '../DBKynd.pfx',
         certificatePassword: certPassword,
       },
@@ -83,22 +83,30 @@ module.exports = (grunt) => {
       options: {
         accessKeyId: '<%= aws.AWSAccessKeyId %>',
         secretAccessKey: '<%= aws.AWSSecretKey %>',
+        bucket: 'controlcast',
+        region: 'us-west-2',
       },
       upload: {
         files: [
           {
-            expand: true, cwd: `./dist/win32/x86/`, src: [
-            `ControlCast-${appVersion}-delta.nupkg`,
-            `ControlCast-${appVersion}-full.nupkg`,
-            'RELEASES',
-          ], dest: `controlcast2/win32/x86/`,
+            expand: true,
+            cwd: `./dist/win32/x86/`,
+            src: [
+              `ControlCast-${appVersion}-delta.nupkg`,
+              `ControlCast-${appVersion}-full.nupkg`,
+              'RELEASES',
+            ],
+            dest: `/win32/x86/`,
           },
           {
-            expand: true, cwd: `./dist/win32/x64/`, src: [
-            `ControlCast-${appVersion}-delta.nupkg`,
-            `ControlCast-${appVersion}-full.nupkg`,
-            'RELEASES',
-          ], dest: `controlcast2/win32/x64/`,
+            expand: true,
+            cwd: `./dist/win32/x64/`,
+            src: [
+              `ControlCast-${appVersion}-delta.nupkg`,
+              `ControlCast-${appVersion}-full.nupkg`,
+              'RELEASES',
+            ],
+            dest: `/win32/x64/`,
           },
         ],
       },
