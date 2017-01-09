@@ -1,4 +1,5 @@
 'use strict';
+/* eslint no-inline-comments: 0 */
 /* eslint no-unused-vars: 0 */
 /* eslint no-undef: 0 */
 /* eslint no-console: 0 */

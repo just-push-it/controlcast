@@ -1,4 +1,5 @@
 'use strict';
+/* eslint no-inline-comments: 0 */
 /* eslint no-unused-vars: 0 */
 /* eslint no-undef: 0 */
 /* eslint no-console: 0 */
@@ -121,7 +122,8 @@ ipc.on('update_port', (e, data) => {
 });
 
 function clrNoty() {
-  $('.blanket').fadeIn(200); // Darken the body
+  const blanket = $('.blanket');
+  $(blanket).fadeIn(200); // Darken the body
   const address = `http://localhost:${config.app.clr.port || 3000}`;
   noty({
     text: `<b>${address}</b>`,
@@ -134,7 +136,7 @@ function clrNoty() {
     timeout: false,
     closeWith: ['click', 'button'],
     callback: {
-      onClose: () => $('.blanket').fadeOut(1000),
+      onClose: () => $(blanket).fadeOut(1000),
     },
     buttons: [
       {

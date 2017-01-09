@@ -1,4 +1,6 @@
 'use strict';
+/* eslint no-inline-comments: 0 */
+
 const electron = require('electron');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
