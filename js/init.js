@@ -107,8 +107,8 @@ function connectToLaunchpad() { //Attempt to connect to the Launchpad
     let midiInCount = midiIn.getPortCount(); //Gets the number of Midi input ports connected
     let midiOutCount = midiOut.getPortCount(); //Gets the number of Midi output ports connected
     if (midiInCount <= 0 || midiOutCount <= 0) return console.log("No Midi devices found. Have you plugged in the Launchpad Device yet?");
-    let midiInPort;
-    let midiOutPort;
+    let midiInPort = null;
+    let midiOutPort = null;
     for (let i = 0; i < midiInCount; i++) { //Loop through Midi input ports
         if (midiIn.getPortName(i).toLowerCase().includes("launchpad")) {
             midiInPort = i; //Save index of Launchpad input port if found
@@ -119,10 +119,12 @@ function connectToLaunchpad() { //Attempt to connect to the Launchpad
             midiOutPort = i; //Save index of Launchpad output port if found
         }
     }
-    if (!midiInPort && !midiOutPort) return console.log("Launchpad Device not found. Is it unplugged?");
+    console.log(midiInPort, midiOutPort);
+    if (midiInPort === null || midiOutPort === null) return console.log("Launchpad Device not found. Is it unplugged?");
+
     launchpad = new launchpadder(midiInPort, midiOutPort); //Connect to launchpad
     if (launchpad) {
-        console.log("Launchpad connection successful");
+        console.log(`'${midiIn.getPortName(midiInPort)}' connection successful`);
         isMidiConnected(); //Set midi_connected
 
         launchpad.on("press", button => { //Create the midi button press handler
@@ -139,7 +141,7 @@ function connectToLaunchpad() { //Attempt to connect to the Launchpad
 
 usbDetect.on('add', device => {
     if (device.deviceName.toLowerCase().includes("launchpad")) { //Launchpad USB was inserted
-        console.log('Launchpad USB detected. Connecting in 4 seconds');
+        console.log(`'${device.deviceName}' USB detected. Connecting in 4 seconds`);
         if (!usbConnected) { //This stops the random occurrence of the add event firing twice rapidly
             usbConnected = true;
             reconnectTimer = setTimeout(() => {
@@ -152,7 +154,7 @@ usbDetect.on('add', device => {
 
 usbDetect.on('remove', device => {
     if (device.deviceName.toLowerCase().includes("launchpad")) { //Launchpad USB was removed
-        console.log("Launchpad USB disconnected");
+        console.log(`'${device.deviceName}' USB disconnected`);
         if (reconnectTimer) clearTimeout(reconnectTimer); //Stop reconnect timer if it was started
         usbConnected = false;
         launchpad = null;
