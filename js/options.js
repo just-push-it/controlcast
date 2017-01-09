@@ -16,7 +16,7 @@ $(document).ready(() => {
   });
 
   $('.expandable').click((event) => { // Click to expand/hide option groups
-    if (e.target.className === 'clear_opt') return; // Don't expand if the 'Clear' button is what was clicked
+    if (event.target.className === 'clear_opt') return; // Don't expand if the 'Clear' button is what was clicked
     const content = $(event.currentTarget).next(); // Target the content div
     if (content.hasClass('expanded')) {
       content.removeClass('expanded').slideUp(500); // Hide if this was already expanded
