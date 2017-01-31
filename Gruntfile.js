@@ -78,7 +78,7 @@ module.exports = (grunt) => {
       './dist/',
     ],
 
-    aws: grunt.file.readJSON('./awsCreds.json'),
+    aws: grunt.file.readJSON('../awsCreds.json'),
     aws_s3: {
       options: {
         accessKeyId: '<%= aws.AWSAccessKeyId %>',

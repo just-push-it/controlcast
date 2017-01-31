@@ -1,6 +1,6 @@
 {
   "name": "ControlCast",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "ControlCast",
   "main": "./app",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "author": "DBKynd",
   "devDependencies": {
-    "electron": "^1.4.13",
+    "electron": "^1.4.15",
     "grunt": "^1.0.1",
     "grunt-aws-s3": "^0.14.5",
     "grunt-contrib-clean": "^1.0.0",
@@ -18,15 +18,15 @@
     "load-grunt-tasks": "^3.5.2"
   },
   "dependencies": {
-    "express": "^4.14.0",
+    "express": "^4.14.1",
     "jquery": "^3.1.1",
     "keycode": "^2.1.8",
     "launchpadder": "0.0.5",
     "midi": "^0.9.5",
     "moment": "^2.17.1",
-    "noty": "^2.3.11",
+    "noty": "^2.4.0",
     "request": "^2.79.0",
-    "robotjs": "^0.4.5",
+    "robotjs": "github:dbkynd/robotjs#morekeys",
     "simpleflakes": "^1.2.3",
     "socket.io": "^1.7.2",
     "underscore": "^1.8.3",
