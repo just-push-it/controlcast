@@ -212,7 +212,20 @@ function sendHotkey(key, action) {
 
 function resolveKey(key) { // Match up the different key names from the 2 different libraries we are using
   key = key.toLowerCase();
-  if (key.startsWith('numpad')) return key.replace(' ', '_');
+  if (key.startsWith('numpad')) {
+    switch (key.split(' ')[1]) {
+      case '/':
+        return 'numpad_divide';
+      case '*':
+        return 'numpad_multiply';
+      case '-':
+        return 'numpad_minus';
+      case '+':
+        return 'numpad_plus';
+      default:
+        return key.replace(' ', '_');
+    }
+  }
   switch (key) {
     case 'ctrl':
       return 'control';
