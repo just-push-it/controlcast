@@ -124,9 +124,9 @@ $(document).ready(() => {
 
   $('#hotkey_string').focus((event) => { // Text box field to create hotkey was focused
     const combo = { // Create combo object to store what keys we want
-      ctrl: false,
-      shift: false,
-      alt: false,
+      ctrl: null,
+      shift: null,
+      alt: null,
       key: null,
     };
     $(event.currentTarget).keydown((keydownEvent) => { // Key pressed while focused
@@ -140,25 +140,22 @@ $(document).ready(() => {
         'MY CALCULATOR',
       ];
       if (ignoredKeys.indexOf(keyName) !== -1) return;
-      switch (keyName) { // Save the modifiers being pressed
-        case 'CTRL':
-          combo.ctrl = true;
-          break;
-        case 'SHIFT':
-          combo.shift = true;
-          break;
-        case 'ALT':
-          combo.alt = true;
-          break;
-        default: // Save only 1 non-modifier to the combo
-          combo.key = keyName;
-          break;
+      const originalKey = keydownEvent.originalEvent.code.toUpperCase();
+      if (originalKey.includes('CONTROL')) {
+        combo.ctrl = originalKey.includes('LEFT') ? 'L-CTRL' : 'R-CTRL';
+      } else if (originalKey.includes('SHIFT')) {
+        combo.shift = originalKey.includes('LEFT') ? 'L-SHIFT' : 'R-SHIFT';
+      } else if (originalKey.includes('ALT')) {
+        combo.alt = originalKey.includes('LEFT') ? 'L-ALT' : 'R-ALT';
+      } else {
+        combo.key = keyName;
       }
+
       const display = []; // Create an empty array to be filled with combo keys
       // Only add the keys to the display array if they exist
-      if (combo.ctrl) display.push('CTRL');
-      if (combo.shift) display.push('SHIFT');
-      if (combo.alt) display.push('ALT');
+      if (combo.ctrl) display.push(combo.ctrl);
+      if (combo.shift) display.push(combo.shift);
+      if (combo.alt) display.push(combo.alt);
       if (combo.key) display.push(combo.key);
       // Stringify the combo key options array and display it in the text field
       $(keydownEvent.currentTarget).val(display.join(' + '));
@@ -168,26 +165,20 @@ $(document).ready(() => {
       colorKey(lastKey, 'release');
       checkmarks();
     }).alphanum({
-      allow: '+`-[]\\;\',./',
+      allow: '+`-[]\\;\',./*',
       allowOtherCharSets: false,
     });
     $(event.currentTarget).keyup((keyupEvent) => { // Key released while focused
       const keyName = keycode(keyupEvent).toUpperCase(); // Get text keyName
-      switch (keyName) { // Save which modifiers were released
-        case 'CTRL':
-          combo.ctrl = false;
-          break;
-        case 'SHIFT':
-          combo.shift = false;
-          break;
-        case 'ALT':
-          combo.alt = false;
-          break;
-        case combo.key: // If the released key was the saved non-modifier key, remove it from the combo object
-          combo.key = null;
-          break;
-        default:
-        // Do Nothing
+      const originalKey = keyupEvent.originalEvent.code.toUpperCase();
+      if (originalKey.includes('CONTROL')) {
+        combo.ctrl = null;
+      } else if (originalKey.includes('SHIFT')) {
+        combo.shift = null;
+      } else if (originalKey.includes('ALT')) {
+        combo.alt = null;
+      } else if (combo.key === keyName) {
+        combo.key = null;
       }
     });
   });

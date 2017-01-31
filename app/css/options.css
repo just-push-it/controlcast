@@ -351,3 +351,7 @@ input[type="text"].num_input {
 #clr_pos {
     width: 110px;
 }
+
+input#hotkey_string {
+    width: 260px;
+}

@@ -119,7 +119,7 @@ app.on('ready', () => { // Application has finished loading
 function getDefaultConfig() { // Returns the default config object
   return {
     app: {
-      version: 3,
+      version: 4,
       id: simpleflake.simpleflake().toString(),
       pos: {
         x: null,
@@ -361,6 +361,16 @@ function checkConfigVer() {
       case 2:
         config.app.id = simpleflake.simpleflake().toString();
         config.app.version = 3;
+        break;
+      case 3:
+        for (const key in config.keys) {
+          if (config.keys.hasOwnProperty(key)) {
+            config.keys[key].hotkey.string = config.keys[key].hotkey.string.replace('CTRL', 'L-CTRL')
+              .replace('SHIFT', 'L-SHIFT')
+              .replace('ALT', 'L-ALT');
+          }
+        }
+        config.app.version = 4;
         break;
       default:
       // Do Nothing

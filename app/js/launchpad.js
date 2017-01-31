@@ -222,21 +222,31 @@ function resolveKey(key) { // Match up the different key names from the 2 differ
         return 'numpad_minus';
       case '+':
         return 'numpad_plus';
+      case '.':
+        return 'numpad_decimal';
       default:
         return key.replace(' ', '_');
     }
   }
   switch (key) {
-    case 'ctrl':
-      return 'control';
+    case 'l-ctrl':
+      return 'left_control';
+    case 'r-ctrl':
+      return 'right_control';
+    case 'l-shift':
+      return 'left_shift';
+    case 'r-shift':
+      return 'right_shift';
+    case 'l-alt':
+      return 'left_alt';
+    case 'r-alt':
+      return 'right_alt';
     case 'esc':
       return 'escape';
     case 'page up':
       return 'pageup';
     case 'page down':
       return 'pagedown';
-    case 'pause/break':
-      return 'pausebreak';
     default:
       return key;
   }
