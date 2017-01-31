@@ -8,7 +8,7 @@
   },
   "author": "DBKynd",
   "devDependencies": {
-    "electron": "^1.4.15",
+    "electron": "^1.5.0",
     "grunt": "^1.0.1",
     "grunt-aws-s3": "^0.14.5",
     "grunt-contrib-clean": "^1.0.0",
@@ -26,7 +26,7 @@
     "moment": "^2.17.1",
     "noty": "^2.4.0",
     "request": "^2.79.0",
-    "robotjs": "github:dbkynd/robotjs#morekeys",
+    "robotjs": "github:dbkynd/robotjs",
     "simpleflakes": "^1.2.3",
     "socket.io": "^1.7.2",
     "underscore": "^1.8.3",
