@@ -171,7 +171,7 @@ $(document).ready(() => {
       allow: '+`-[]\\;\',./',
       allowOtherCharSets: false,
     });
-    $(keydownEvent.currentTarget).keyup((keyupEvent) => { // Key released while focused
+    $(event.currentTarget).keyup((keyupEvent) => { // Key released while focused
       const keyName = keycode(keyupEvent).toUpperCase(); // Get text keyName
       switch (keyName) { // Save which modifiers were released
         case 'CTRL':
