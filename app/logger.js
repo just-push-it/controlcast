@@ -20,7 +20,7 @@ module.exports = () => {
 
   // Log to file
   logger.add(logger.transports.File, {
-    filename: `${logDir}/-results.log`,
+    filename: `${logDir}/info.log`,
     json: false,
     level: 'info',
     prepend: true,
@@ -36,5 +36,6 @@ module.exports = () => {
     json: true,
   });
 
+  process.on('unhandledRejection', logger.error);
   return logger;
 };

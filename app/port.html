@@ -30,36 +30,40 @@
         }
     </style>
     <script>
-        'use strict';
-        const ipc = require('electron').ipcRenderer;
+      'use strict';
+      const remote = require('electron').remote;
+      const ipc = require('electron').ipcRenderer;
+      const Config = require('electron-config');
+      const config = new Config();
 
-        window.$ = window.jQuery = require('jquery');
-        require('./js/jquery/alphanum.min.js');
+      window.$ = window.jQuery = require('jquery');
+      require('./js/jquery/alphanum.min.js');
 
-        $(document).ready(function () {
-            ipc.send('get_port');
-
-            $('.ok').click(function () {
-                ipc.send('set_port', parseInt($('.port').val()));
-            });
-
-            $('.cancel').click(function () {
-                ipc.send('port_quit');
-            });
-
-            $('.port').numeric({
-                allowMinus: false,
-                allowThouSep: false,
-                allowDecSep: false,
-                min: 1,
-                max: 65535
-            });
-
+      $(document).ready(() => {
+        const portInput = $('.port');
+        $(portInput).val(config.get('app.clr.port'));
+        $(portInput).keydown(e => {
+          if (e.which === 13) $('.ok').trigger('click');
         });
 
-        ipc.on('port', function (e, data) {
-            $('.port').val(data);
+        $('.ok').click(() => {
+          ipc.send('set_port', parseInt($(portInput).val()));
+          remote.getCurrentWindow().close();
         });
+
+        $('.cancel').click(() => {
+          remote.getCurrentWindow().close();
+        });
+
+        $(portInput).numeric({
+          allowMinus: false,
+          allowThouSep: false,
+          allowDecSep: false,
+          min: 1,
+          max: 65535
+        });
+
+      });
     </script>
 </head>
 <body>

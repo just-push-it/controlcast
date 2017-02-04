@@ -36,15 +36,17 @@ const titleMenu = Menu.buildFromTemplate([
       {
         label: 'Close to Tray',
         type: 'checkbox',
-        click: (e) => {
-          config.app.close_to_tray = e.checked; // Store and save close to tray to config here and main app config
-          ipc.send('close_to_tray', e.checked, true);
-        },
+        click: (e) => config.set('app.close_to_tray', e.checked),
       },
       {
         label: 'Start with Windows',
         type: 'checkbox',
         click: (e) => ipc.send('windows_auto_start', e.checked),
+      },
+      {
+        label: 'Start Minimized',
+        type: 'checkbox',
+        click: (e) => config.set('app.start_minimized', e.checked),
       },
       {
         label: 'CLR Browser',
@@ -53,8 +55,7 @@ const titleMenu = Menu.buildFromTemplate([
             label: 'Enabled',
             type: 'checkbox',
             click: (e) => {
-              ipc.send('clr_enabled', e.checked);
-              config.app.clr.enabled = e.checked;
+              config.set('app.clr.enabled', e.checked);
               if (e.checked) {
                 $('.clr_options').show();
                 $('#flush_clr').show();
@@ -65,7 +66,6 @@ const titleMenu = Menu.buildFromTemplate([
                 $('#flush_clr').hide();
                 stopCLR();
               }
-              setAllLights();
             },
           },
           {
@@ -74,7 +74,7 @@ const titleMenu = Menu.buildFromTemplate([
           },
           {
             label: 'Open Browser',
-            click: () => require('electron').shell.openExternal(`http://localhost:${config.app.clr.port}`),
+            click: () => require('electron').shell.openExternal(`http://localhost:${config.get('app.clr.port')}`),
           },
         ],
       },
@@ -101,8 +101,8 @@ const titleMenu = Menu.buildFromTemplate([
             type: 'info',
             buttons: ['ok'],
             title: 'About ControlCast',
-            message: `'ControlCast' by DBKynd\nVersion: ${app_version}` +
-            `\ndb@dbkynd.com\n©2016\n\nArtwork and beta testing by Annemunition`,
+            message: `'ControlCast' by DBKynd\nVersion: ${remote.getGlobal('app_version')}` +
+            `\ndb@dbkynd.com\n©${moment().format('YYYY')}\n\nArtwork and Beta Testing by AnneMunition`,
           });
         },
       },
@@ -112,19 +112,17 @@ const titleMenu = Menu.buildFromTemplate([
 
 Menu.setApplicationMenu(titleMenu); // Set title menu
 
-ipc.on('update_port', (e, data) => {
-  console.log(data);
-  config.app.clr.port = data;
-  stopCLR(() => {
-    startCLR();
-    clrNoty();
-  });
-});
+// Set options from config
+titleMenu.items[1].submenu.items[0].checked = config.get('app.close_to_tray');
+titleMenu.items[1].submenu.items[1].checked = config.get('app.auto_start');
+titleMenu.items[1].submenu.items[2].checked = config.get('app.start_minimized');
+titleMenu.items[1].submenu.items[3].submenu.items[0].checked = config.get('app.clr.enabled');
+
 
 function clrNoty() {
   const blanket = $('.blanket');
   $(blanket).fadeIn(200); // Darken the body
-  const address = `http://localhost:${config.app.clr.port || 3000}`;
+  const address = `http://localhost:${config.get('app.clr.port') || 3000}`;
   noty({
     text: `<b>${address}</b>`,
     animation: {

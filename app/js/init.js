@@ -6,9 +6,9 @@
 /* eslint new-cap: 0 */
 /* eslint prefer-const: 0 */
 
+const Config = require('electron-config');
 const remote = require('electron').remote;
 const Menu = remote.Menu;
-const MenuItem = remote.MenuItem;
 const dialog = remote.dialog;
 const Tray = remote.Tray;
 const autoUpdater = remote.autoUpdater;
@@ -24,12 +24,14 @@ const noty = require('noty');
 const keycode = require('keycode');
 const fs = require('fs');
 const request = require('request');
+const moment = require('moment');
 
 window.$ = window.jQuery = require('jquery');
 require('./js/jquery/jquery-ui.min.js');
 require('./js/jquery/alphanum.min.js');
 
-let config; // Holds all the app and key settings
+const releaseUrl = remote.getGlobal('release_url');
+
 let launchpad; // Our launchpadder instance
 let usbConnected; // Bool for Launchpad USB state
 let reconnectTimer; // Reconnection timer
@@ -42,26 +44,7 @@ const keyboard = [];
 const tracks = {}; // Holds all the audio tracks in memory to be played
 const images = {};
 
-const app_version = remote.getGlobal('app_version');
-const releaseUrl = remote.getGlobal('release_url');
-
-ipc.on('config', (e, data) => { // Sent from main app on DOM ready. Sends the current config
-  config = data; // Save config object
-  setAllLights(); // Set all gui and midi lights to released state
-  setKeyOptions(); // Set all key configs
-  loadTracks(); // Load audio tracks into memory to be played immediately on demand
-  if (titleMenu) {
-    titleMenu.items[1].submenu.items[0].checked = config.app.close_to_tray;
-    titleMenu.items[1].submenu.items[1].checked = config.app.auto_start;
-    titleMenu.items[1].submenu.items[2].submenu.items[0].checked = config.app.clr.enabled;
-  } // Set title menu checkbox
-  if (config.app.clr.enabled && !clrRunning) {
-    $('.clr_options').show();
-    startCLR();
-  } else {
-    $('#flush_clr').hide();
-  }
-});
+const config = new Config(); // Load Config
 
 $(document).ready(() => { // On DOM ready
   for (let c = 0; c < 8; c++) { // Creates the top row key divs
@@ -88,25 +71,24 @@ $(document).ready(() => { // On DOM ready
     $('.launchpad .keys_side').append(newDiv);
   }
 
+  if (config.get('app.clr.enabled')) {
+    $('.clr_options').show();
+  } else {
+    $('#flush_clr').hide();
+  }
+  if (!clrRunning) startCLR();
+
   $('body').fadeIn(200);
+
   isMidiConnected(); // Set midi_connected on load
+  setAllLights(); // Set all gui and midi lights to released state
+  setKeyOptions(); // Set all key configs
+  loadTracks(); // Load audio tracks into memory to be played immediately on demand
 
   $('#update_available').click(() => {
     ipc.send('quit_and_install');
   });
 });
-
-function get(obj, key) { // Search and return a nested element in an object or null
-  return key.split('.').reduce((o, x) => (typeof o === 'undefined' || o === null) ? o : o[x], obj);
-}
-
-function set(obj, str, val) {
-  str = str.split('.');
-  while (str.length > 1) {
-    obj = obj[str.shift()];
-  }
-  obj[str.shift()] = val;
-}
 
 function connectToLaunchpad() { // Attempt to connect to the Launchpad
   const midiIn = new midi.input(); // Create new Midi input
@@ -185,6 +167,7 @@ function isMidiConnected() {
 }
 
 function loadTracks() { // Load track data to array
+  console.log('Loading Audio Tracks');
   for (const key in config.keys) { // Loop through keys
     if (config.keys.hasOwnProperty(key)) {
       const audio = config.keys[key].audio; // Get key audio settings
