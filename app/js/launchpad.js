@@ -9,19 +9,19 @@
 function keyEvent(source, key, action, edit) {
   console.log(`${source} key ${action === 'press' ? 'pressed' : 'release'}: ${key}`); // Log the key action
   if (!edit) { // Only perform these actions if left-click on key - no right-click
-    //colorKey(key, action); // Color the key based on the action
-    //playAudio(key, action); // Play Audio if used
-    //sendCLR(key, action); // Send CLR event if used
-    //sendHotkey(key, action); // Send Hotkey if used
+    colorKey(key, action); // Color the key based on the action
+    //playAudio(key, action); // Play Audio if used // todo
+    //sendCLR(key, action); // Send CLR event if used // todo
+    //sendHotkey(key, action); // Send Hotkey if used // todo
   }
   if (action === 'press') {
+    $('.options .key_pos_label').text(`(${key.join(',')})`); // Change key label to show last pressed key
     lastKey = key; // Update what the last key pressed was
-    $('.options .key_pos_label').text(`(${lastKey.join(',')})`); // Change key label to show last pressed key
-    //setKeyOptions(); // Update the Edit key options fields // todo
+    setKeyOptions(); // Update the Edit key options fields
   }
 }
 
-$(document).ready(() => { // On DOM ready
+function readyLaunchpad() { // On DOM ready
   const launchpadGuiKey = $('.launchpad .key');
   launchpadGuiKey.mousedown((event) => { // Launchpad gui key was pressed
     const key = getKeyPosition(event.currentTarget); // Get key position array
@@ -40,12 +40,11 @@ $(document).ready(() => { // On DOM ready
     // Release if mouse left key while pressed
     if ($(event.currentTarget).hasClass('pressed')) releasedKey(event.currentTarget);
   });
-});
+}
 
-function getGuiKey(key) { // Find the respective gui element with the key position
-  return $(
-    `.launchpad .key[data-pos="${key.join(',')}"]`
-  );
+// Find the respective gui element with the key position
+function getGuiKey(key) {
+  return $(`.launchpad .key[data-pos="${key.join(',')}"]`);
 }
 
 function releasedKey(that) { // Gui key was released
@@ -60,8 +59,8 @@ function getKeyPosition(that) {
 }
 
 function setAllLights() { // Sets all key lights to their released state color (background color)
-  for (let c = 0; c < 9; c++) {
-    for (let r = 0; r < 9; r++) {
+  for (let c = 0; c <= 8; c++) {
+    for (let r = 0; r <= 8; r++) {
       if (c === 8 && r === 8) break; // 8,8 does not exist on the pad
       colorKey([c, r], 'release'); // Color the button
     }
@@ -72,7 +71,8 @@ function colorKey(key, action) {
   const guiKey = getGuiKey(key); // Find key in DOM
   const oldColor = guiKey.data('color'); // Get current key color class
   guiKey.removeClass(oldColor); // Remove old color class
-  const keyColor = config.get(`keys.${key.join(',')}.color.${action}`) || 'OFF'; // Try to get key color
+  const keyConfig = getKeyConfig(key);
+  const keyColor = keyConfig.color[action] || 'OFF'; // Try to get key color
   guiKey.addClass(keyColor); // Add new key color class
   guiKey.data('color', keyColor); // Store color to data attribute
   if (action === 'press') {
@@ -108,19 +108,22 @@ function colorKey(key, action) {
   }
 }
 
+ipc.on('all_dark', () => { // Message to turn off all the midi key lights
+  if (launchpad) launchpad.allDark(); // Turn off all lights if launchpad is connected
+});
+
+function stopAudio(track) { // Stops the track
+  const tmp = track.src; // Stores the current source
+  track.src = ''; // Clears the source, this is what actually stops the audio
+  track.src = tmp; // Restore the source for next play
+}
+
+
 /*
 
- ipc.on('all_dark', () => { // Message to turn off all the midi key lights
- if (launchpad) launchpad.allDark(); // Turn off all lights if launchpad is connected
- });
 
- ipc.on('save_config_callback', (e, err) => { // Callback from main app after saving config
- if (err) {
- centerNOTY('error', 'There was an error saving the settings.');
- } else {
- centerNOTY('success', 'Save Successful!');
- }
- });
+
+
 
  // Display notification on center of window that auto disappears and darkens the main content
  function centerNOTY(type, text, timeout) {
@@ -185,11 +188,7 @@ function colorKey(key, action) {
  }
  }
 
- function stopAudio(track) { // Stops the track
- const tmp = track.src; // Stores the current source
- track.src = ''; // Clears the source, this is what actually stops the audio
- track.src = tmp; // Restore the source for next play
- }
+
 
  function sendHotkey(key, action) {
  const hotkey = get(config,
@@ -287,8 +286,8 @@ function colorKey(key, action) {
  }
 
  function sendCLR(key, action) {
- if (!config.app.clr.enabled) return;
  if (action === 'release') return;
+ if (!config.app.clr.enabled) return;
  const clr = get(config,
  `keys.${key.join(',')}.clr`
  );
