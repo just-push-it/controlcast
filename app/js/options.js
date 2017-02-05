@@ -144,6 +144,7 @@ function readyOptions() {
       const keyConfig = getKeyConfig(lastKey);
       keyConfig.hotkey.string = $(keydownEvent.currentTarget).val();
       tempKeys[lastKey.join(',')] = keyConfig; // Save to config
+      setIcons(lastKey, keyConfig);
       checkmarks();
     }).alphanum({
       allow: '+`-[]\\;\',./!*',
@@ -281,6 +282,7 @@ function readyOptions() {
     const keyConfig = getKeyConfig(lastKey);
     setProp(keyConfig, $(event.currentTarget).data('config'), $(event.currentTarget).val());
     tempKeys[lastKey.join(',')] = keyConfig;
+    setIcons(lastKey, keyConfig);
     checkmarks();
   });
 
@@ -369,6 +371,30 @@ function readyOptions() {
 
   $('#flush_clr').click(() => clrIO.emit('flush'));
   setKeyOptions(); // Set 0,0 key config on load
+}
+
+function setIcons(key, keyConfig) {
+  const usingHotkey = keyConfig.hotkey.string; // Gets bool if we are using hotkey
+  const usingAudio = keyConfig.audio.path; // Gets bool if we are using audio
+  let usingCLR = null;
+  if (config.get('app.clr.enabled')) { // Gets bool if we are using clr
+    usingCLR = keyConfig.clr.path;
+  }
+  let j = 0;
+  if (usingHotkey) j++;
+  if (usingAudio) j++;
+  if (usingCLR) j++;
+  const hotkeyImg = usingHotkey ? '<img src=\'images/hotkey.png\'>' : '';
+  const audioImg = usingAudio ? '<img src=\'images/audio.png\'>' : '';
+  const clrImg = usingCLR ? '<img src=\'images/clr.png\'>' : '';
+  const guiKey = getGuiKey(key);
+  // Sets the inner key div to show associated icons to events
+  guiKey.html(`<div><span>${hotkeyImg}${audioImg}${clrImg}</span></div>`);
+  if (j > 2) {
+    $(guiKey).find('div').addClass('shift_up');
+  } else {
+    $(guiKey).find('div').removeClass('shift_up');
+  }
 }
 
 // Update all the key gui elements

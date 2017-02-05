@@ -65,6 +65,7 @@ function setAllLights() { // Sets all key lights to their released state color (
       if (c === 8 && r === 8) break; // 8,8 does not exist on the pad
       const keyConfig = getKeyConfig([c, r]);
       colorKey([c, r], 'release', keyConfig); // Color the button
+      setIcons([c, r], keyConfig);
     }
   }
 }
@@ -85,26 +86,6 @@ function colorKey(key, action, keyConfig) {
   if (launchpad) { // Set midi color if launchpad is connected
     const button = launchpad.getButton(key[0], key[1]); // Get button object
     button.light(color[keyColor]); // Color the key
-  }
-  const usingHotkey = keyConfig.hotkey.string; // Gets bool if we are using hotkey
-  const usingAudio = keyConfig.audio.path; // Gets bool if we are using audio
-  let usingCLR = null;
-  if (config.get('app.clr.enabled')) { // Gets bool if we are using clr
-    usingCLR = keyConfig.clr.path;
-  }
-  let j = 0;
-  if (usingHotkey) j++;
-  if (usingAudio) j++;
-  if (usingCLR) j++;
-  const hotkeyImg = usingHotkey ? '<img src=\'images/hotkey.png\'>' : '';
-  const audioImg = usingAudio ? '<img src=\'images/audio.png\'>' : '';
-  const clrImg = usingCLR ? '<img src=\'images/clr.png\'>' : '';
-  // Sets the inner key div to show associated icons to events
-  guiKey.html(`<div><span>${hotkeyImg}${audioImg}${clrImg}</span></div>`);
-  if (j > 2) {
-    $(guiKey).find('div').addClass('shift_up');
-  } else {
-    $(guiKey).find('div').removeClass('shift_up');
   }
 }
 
