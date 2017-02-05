@@ -79,6 +79,7 @@ if (shouldQuit) {
 
 // Application Init
 
+
 let mainWindow = null; // Main application window
 let portWindow = null; // Config load error window
 let forceQuit = null; // Bool to force quit app from tray
@@ -154,10 +155,9 @@ function createMainWindow() { // Loads main application window
     }
     if (mainWindow) mainWindow.webContents.send('all_dark'); // Tell the launchpad to turn off all lights on close
     const pos = mainWindow.getPosition(); // Save last position of the window for next time the app is run
-    // Only save if position changed - Save some ms
+    // Only save if position changed
     if (config.get('app.pos.x') !== pos[0] || config.get('app.pos.y') !== pos[1]) {
-      config.set('app.pos.x', pos[0]);
-      config.set('app.pos.y', pos[1]);
+      config.set('app.pos', { x: pos[0], y: pos[1] });
     }
   });
 
