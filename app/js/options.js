@@ -93,10 +93,12 @@ function readyOptions() {
     },
   });
 
-  volumeSlider.mouseleave(() => {
-    const keyConfig = getKeyConfig(lastKey); // Get the key config or defaults
-    keyConfig.audio.volume = $('#vol_val').text().replace('%', '');
-    tempKeys[lastKey.join(',')] = keyConfig; // Save to temp config
+  volumeSlider.mousedown(() => {
+    volumeSlider.mouseleave(() => {
+      const keyConfig = getKeyConfig(lastKey); // Get the key config or defaults
+      keyConfig.audio.volume = $('#vol_val').text().replace('%', '');
+      tempKeys[lastKey.join(',')] = keyConfig; // Save to temp config
+    });
   });
 
 
@@ -360,7 +362,7 @@ function readyOptions() {
   // General
 
 
-  // $('#flush_clr').click(() => clrIO.emit('flush')); // todo
+  $('#flush_clr').click(() => clrIO.emit('flush'));
   setKeyOptions(); // Set 0,0 key config on load
 }
 
@@ -446,7 +448,7 @@ function sendImageChange(filePath, ext) {
     if (!err) {
       const m = Date.parse(stats.mtime.toString()) / 1000;
       const k = lastKey.join(',');
-      // clrIO.emit('image_change', { key: k, src: `images/${k}${ext}?m=${m}` }); // todo
+      clrIO.emit('image_change', { key: k, src: `images/${k}${ext}?m=${m}` });
     } else {
       console.log(JSON.stringify(err));
     }
