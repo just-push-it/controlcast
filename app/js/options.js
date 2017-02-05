@@ -42,12 +42,11 @@ function readyOptions() {
     }
     // Set the color name to our new gui friendly name
     $(`.color_select.${parentClass} span`).text(toTitleCase(color.split('_')));
-    const key = getGuiKey(lastKey);
-    const keyPos = key.data('pos');
-    const keyConfig = getKeyConfig(keyPos); // Get the key config or defaults
+    const keyConfig = getKeyConfig(lastKey); // Get the key config or defaults
     const action = parentClass === 'active' ? 'press' : 'release'; // Set action
     keyConfig.color[action] = $(`#${parentClass}_key_color`).data('color'); // Update the changed color
-    tempKeys[keyPos] = keyConfig; // Save to temp config
+    tempKeys[lastKey.join(',')] = keyConfig; // Save to temp config
+    colorKey(lastKey, 'release');
     checkmarks(); // Update gui checkmarks
   });
 
@@ -327,6 +326,7 @@ function readyOptions() {
 
   $('#clear_all').click(() => { // Reset key button was pressed
     tempKeys[lastKey.join(',')] = defaultKeyConfig();
+    colorKey(lastKey, 'release');
     setKeyOptions(); // Update all key settings to show default
   });
 
@@ -334,6 +334,7 @@ function readyOptions() {
     const keyConfig = getKeyConfig(lastKey);
     keyConfig.color = defaultKeyConfig().color;
     tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release');
     setKeyOptions(); // Update key settings
   });
 
@@ -341,6 +342,7 @@ function readyOptions() {
     const keyConfig = getKeyConfig(lastKey);
     keyConfig.hotkey = defaultKeyConfig().hotkey;
     tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release');
     setKeyOptions(); // Update key settings
   });
 
@@ -348,6 +350,7 @@ function readyOptions() {
     const keyConfig = getKeyConfig(lastKey);
     keyConfig.audio = defaultKeyConfig().audio;
     tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release');
     setKeyOptions(); // Update key settings
   });
 
@@ -355,6 +358,7 @@ function readyOptions() {
     const keyConfig = getKeyConfig(lastKey);
     keyConfig.clr = defaultKeyConfig().clr;
     tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release');
     setKeyOptions(); // Update key settings
   });
 
@@ -402,7 +406,6 @@ function setKeyOptions() {
 }
 
 function checkmarks() {
-  colorKey(lastKey, 'release');  // Reset key color
   const keyConfig = getKeyConfig(lastKey);
   if (!keyConfig) {
     $('.color .check_mark').hide();
