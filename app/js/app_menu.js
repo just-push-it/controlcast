@@ -56,6 +56,8 @@ const titleMenu = Menu.buildFromTemplate([
             type: 'checkbox',
             click: (e) => {
               config.set('app.clr.enabled', e.checked);
+              titleMenu.items[1].submenu.items[3].submenu.items[1].enabled = e.checked;
+              titleMenu.items[1].submenu.items[3].submenu.items[2].enabled = e.checked;
               if (e.checked) {
                 $('.clr_options').show();
                 $('#flush_clr').show();
@@ -117,7 +119,8 @@ titleMenu.items[1].submenu.items[0].checked = config.get('app.close_to_tray');
 titleMenu.items[1].submenu.items[1].checked = config.get('app.auto_start');
 titleMenu.items[1].submenu.items[2].checked = config.get('app.start_minimized');
 titleMenu.items[1].submenu.items[3].submenu.items[0].checked = config.get('app.clr.enabled');
-
+titleMenu.items[1].submenu.items[3].submenu.items[1].enabled = config.get('app.clr.enabled');
+titleMenu.items[1].submenu.items[3].submenu.items[2].enabled = config.get('app.clr.enabled');
 
 function clrNoty() {
   const blanket = $('.blanket');
