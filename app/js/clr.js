@@ -6,10 +6,10 @@
 
 const express = require('express');
 const app = express();
-//const io = require('socket.io');
+const io = require('socket.io');
 
 let server;
-// let clrIO;
+let clrIO;
 
 function startCLR() {
   console.log('Starting CLR Browser');
@@ -21,29 +21,27 @@ function startCLR() {
     }
   });
 
-  app.use(express.static(path.join(__dirname, '/clr/assets')));
+  console.log(path.join(__dirname, 'clr/assets'));
+  app.use(express.static(path.join(__dirname, 'clr/assets')));
   server = app.listen(app.get('port'), () => {
     console.log(`Listening on *:${config.get('app.clr.port') || 3000}`);
     clrRunning = true;
   });
 
   app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '/clr/index.html'));
+    res.sendFile(path.join(__dirname, 'clr/index.html'));
   });
 
-  /*clrIO = io.listen(server, {});
-
-   clrIO.on('connection', (socket) => { // Client Connect
-   connected++;
-   console.log(`user connected (${connected})`);
-   sendImageData(socket);
-   });*/
+  clrIO = io.listen(server, {});
+  clrIO.on('connection', (socket) => { // Client Connect
+    sendImageData(socket);
+  });
 }
 
 function stopCLR(callback) {
   console.log('Stopping CLR Browser');
-  //clrIO.close();
-  //clrIO = null;
+  clrIO.close();
+  clrIO = null;
   server.close(() => {
     console.log('CLR Browser stopped');
     clrRunning = false;
