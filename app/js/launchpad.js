@@ -86,11 +86,11 @@ function colorKey(key, action) {
     const button = launchpad.getButton(key[0], key[1]); // Get button object
     button.light(color[keyColor]); // Color the key
   }
-  const usingHotkey = config.get(`keys.${key.join(',')}.hotkey.string`); // Gets bool if we are using hotkey
-  const usingAudio = config.get(`keys.${key.join(',')}.audio.path`); // Gets bool if we are using audio
+  const usingHotkey = keyConfig.hotkey.string; // Gets bool if we are using hotkey
+  const usingAudio = keyConfig.audio.path; // Gets bool if we are using audio
   let usingCLR = null;
   if (config.get('app.clr.enabled')) { // Gets bool if we are using clr
-    usingCLR = config.get(`keys.${key.join(',')}.clr.path`);
+    usingCLR = keyConfig.clr.path;
   }
   let j = 0;
   if (usingHotkey) j++;
@@ -121,27 +121,6 @@ function stopAudio(track) { // Stops the track
 
 /*
 
-
-
-
-
- // Display notification on center of window that auto disappears and darkens the main content
- function centerNOTY(type, text, timeout) {
- $('.blanket').fadeIn(200); // Darken the body
- noty({ // Show NOTY
- layout: 'center',
- type: type,
- text: text,
- animation: {
- open: 'animated flipInX', // Animate.css class names
- close: 'animated flipOutX', // Animate.css class names
- },
- timeout: timeout || 1500,
- callback: {
- onClose: () => $('.blanket').fadeOut(1000), // Restore body
- },
- });
- }
 
  function playAudio(key, action) { // Handle Audio playback
  const audio = get(config,

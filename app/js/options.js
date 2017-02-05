@@ -48,27 +48,28 @@ function readyOptions() {
     const action = parentClass === 'active' ? 'press' : 'release'; // Set action
     keyConfig.color[action] = $(`#${parentClass}_key_color`).data('color'); // Update the changed color
     tempKeys[keyPos] = keyConfig; // Save to temp config
-    console.log('saving temp key, color'); // todo
-    colorKey(keyPos.split(','), 'release');
-    checkmarks();
+    checkmarks(); // Update gui checkmarks
   });
 
-  // Discard button clicked - Get unchanged config from main app
+  // Discard button clicked
   $('#discard_settings').click(() => {
-    for (const key in tempKeys) {
-      if (tempKeys.hasOwnProperty(key)) {
-        delete tempKeys[key];
-      }
-    }
+    tempKeys = {}; // Clear all temp settings
     setKeyOptions(); // Reset current key config to options
     setAllLights(); // Set all gui and midi lights to released state
     loadTracks(); // Load audio tracks into memory to be played immediately on demand
   });
 
-  $('#save_settings').click(() => { // Save button clicked // todo
-    //removeUnusedKeys(); // Remove any default, unused, keys to keep the config file size as small as possible
-    //centerNOTY('success', 'Save Successful!');
-    //centerNOTY('error', 'There was an error saving the settings.');
+  // Save button clicked
+  $('#save_settings').click(() => {
+    const keys = config.get('keys'); // Get current key settings
+    for (const key in tempKeys) { // Loop through all temp keys
+      if (tempKeys.hasOwnProperty(key)) {
+        keys[key] = tempKeys[key]; // Overwrite with new key
+      }
+    }
+    config.set('keys', removeDefaultKeys(keys)); // Save changed keys to file
+    tempKeys = {}; // Clear all temp keys
+    centerNOTY('success', 'Save Successful!');
   });
 
   $('#kill_audio').click(() => { // Stop All Audio button was pressed
@@ -79,7 +80,8 @@ function readyOptions() {
     }
   });
 
-  $('#volume_slider').slider({ // Volume slider options
+  const volumeSlider = $('#volume_slider');
+  volumeSlider.slider({ // Volume slider options
     min: 0,
     max: 100,
     range: 'min',
@@ -87,48 +89,15 @@ function readyOptions() {
     slide: (event, ui) => {
       // Reset track volume if track exists
       if (tracks[lastKey.join(',')]) tracks[lastKey.join(',')].volume = ui.value / 100;
-      const volVal = $('#vol_val');
-      $(volVal).text(`${ui.value}%`); // Set volume label
-      console.log('saving temp key, vol slider'); // todo
-      //const keyConfig = getKeyConfig(lastKey); // Get the key config or defaults // todo
-      //keyConfig.audio.volume = $(volVal).text().replace('%', ''); // Save to volume to the key config
-      //tempKeys[lastKey.join(',')] = keyConfig; // Save to config
+      $('#vol_val').text(`${ui.value}%`); // Set volume label
     },
   });
 
-
-  // Clear Buttons
-
-
-  /* $('#clear_all').click(() => { // Reset key button was pressed
-   config.keys[lastKey.join(',')] = getDefaultKeyConfig(); // Save default key config to this key
-   colorKey(lastKey, 'release');  // Reset key color
-   setKeyOptions(); // Update all key settings to show default
-   });
-
-   $('.color .clear_opt').click(() => {
-   config.keys[lastKey.join(',')].color = getDefaultKeyConfig().color;
-   colorKey(lastKey, 'release');  // Reset key color
-   setKeyOptions(); // Update key settings
-   });
-
-   $('.hotkey .clear_opt').click(() => {
-   config.keys[lastKey.join(',')].hotkey = getDefaultKeyConfig().hotkey;
-   colorKey(lastKey, 'release');  // Reset key color
-   setKeyOptions(); // Update key settings
-   });
-
-   $('.audio .clear_opt').click(() => { // Clear hotkey button was pressed
-   config.keys[lastKey.join(',')].audio = getDefaultKeyConfig().audio;
-   colorKey(lastKey, 'release');  // Reset key color
-   setKeyOptions(); // Update key settings
-   });
-
-   $('.clr_options .clear_opt').click(() => {
-   config.keys[lastKey.join(',')].clr = getDefaultKeyConfig().clr;
-   colorKey(lastKey, 'release');  // Reset key color
-   setKeyOptions(); // Update key settings
-   });/**/
+  volumeSlider.mouseleave(() => {
+    const keyConfig = getKeyConfig(lastKey); // Get the key config or defaults
+    keyConfig.audio.volume = $('#vol_val').text().replace('%', '');
+    tempKeys[lastKey.join(',')] = keyConfig; // Save to temp config
+  });
 
 
   // Hotkey Logic
@@ -171,11 +140,9 @@ function readyOptions() {
       if (combo.key) display.push(combo.key);
       // Stringify the combo key options array and display it in the text field
       $(keydownEvent.currentTarget).val(display.join(' + '));
-      console.log('saving temp key, hotkey'); // todo
-      //const keyConfig = getKeyConfig(); // todo
-      //keyConfig.hotkey.string = $(keydownEvent.currentTarget).val();
-      //config.keys[lastKey.join(',')] = keyConfig; // Save to config
-      //colorKey(lastKey, 'release');
+      const keyConfig = getKeyConfig(lastKey);
+      keyConfig.hotkey.string = $(keydownEvent.currentTarget).val();
+      tempKeys[lastKey.join(',')] = keyConfig; // Save to config
       checkmarks();
     }).alphanum({
       allow: '+`-[]\\;\',./!*',
@@ -309,13 +276,10 @@ function readyOptions() {
 
   // Options Changed
 
-
   $('.opt').on('input change', (event) => { // A savable option was changed, update the key config
-    console.log('saving temp key, general'); // todo
-    //const keyConfig = getKeyConfig();
-    //set(keyConfig, $(event.currentTarget).data('config'), $(event.currentTarget).val());
-    //config.keys[lastKey.join(',')] = keyConfig;
-    //colorKey(lastKey, 'release');
+    const keyConfig = getKeyConfig(lastKey);
+    setProp(keyConfig, $(event.currentTarget).data('config'), $(event.currentTarget).val());
+    tempKeys[lastKey.join(',')] = keyConfig;
     checkmarks();
   });
 
@@ -329,11 +293,12 @@ function readyOptions() {
   css_editor.getSession().setTabSize(2);
   css_editor.$blockScrolling = Infinity;
 
-  css_editor.getSession().on('change', () => {
-    console.log('saving temp key, css'); // todo
-    //const keyConfig = getKeyConfig();
-    //keyConfig.clr.css = css_editor.getSession().getValue();
-    //config.keys[lastKey.join(',')] = keyConfig;
+  css_editor.on('focus', () => {
+    css_editor.getSession().on('change', () => {
+      const keyConfig = getKeyConfig();
+      keyConfig.clr.css = css_editor.getSession().getValue();
+      tempKeys[lastKey.join(',')] = keyConfig;
+    });
   });
 
   $('#reset_clr_css').click(() => {
@@ -354,8 +319,48 @@ function readyOptions() {
     maxPreDecimalPlaces: 3,
   });
 
-  //$('#flush_clr').click(() => clrIO.emit('flush'));
 
+  // Clear Buttons
+
+
+  $('#clear_all').click(() => { // Reset key button was pressed
+    tempKeys[lastKey.join(',')] = defaultKeyConfig();
+    setKeyOptions(); // Update all key settings to show default
+  });
+
+  $('.color .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.color = defaultKeyConfig().color;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    setKeyOptions(); // Update key settings
+  });
+
+  $('.hotkey .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.hotkey = defaultKeyConfig().hotkey;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    setKeyOptions(); // Update key settings
+  });
+
+  $('.audio .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.audio = defaultKeyConfig().audio;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    setKeyOptions(); // Update key settings
+  });
+
+  $('.clr_options .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.clr = defaultKeyConfig().clr;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    setKeyOptions(); // Update key settings
+  });
+
+
+  // General
+
+
+  // $('#flush_clr').click(() => clrIO.emit('flush')); // todo
   setKeyOptions(); // Set 0,0 key config on load
 }
 
@@ -395,62 +400,58 @@ function setKeyOptions() {
 }
 
 function checkmarks() {
-  /*const thisKey = config.keys[lastKey.join(',')];
-   if (!thisKey) {
-   $('.color .check_mark').hide();
-   $('.hotkey .check_mark').hide();
-   $('.audio .check_mark').hide();
-   $('.clr_options .check_mark').hide();
-   return;
-   }
-   if (thisKey.color.press !== 'OFF' || thisKey.color.release !== 'OFF') {
-   $('.color .check_mark').show();
-   } else {
-   $('.color .check_mark').hide();
-   }
-   if (thisKey.hotkey.string !== '') {
-   $('.hotkey .check_mark').show();
-   } else {
-   $('.hotkey .check_mark').hide();
-   }
-   if (thisKey.audio.path !== '') {
-   $('.audio .check_mark').show();
-   } else {
-   $('.audio .check_mark').hide();
-   }
-   if (thisKey.clr.path !== '') {
-   $('.clr_options .check_mark').show();
-   } else {
-   $('.clr_options .check_mark').hide();
-   }*/
+  colorKey(lastKey, 'release');  // Reset key color
+  const keyConfig = getKeyConfig(lastKey);
+  if (!keyConfig) {
+    $('.color .check_mark').hide();
+    $('.hotkey .check_mark').hide();
+    $('.audio .check_mark').hide();
+    $('.clr_options .check_mark').hide();
+    return;
+  }
+  if (keyConfig.color.press !== 'OFF' || keyConfig.color.release !== 'OFF') {
+    $('.color .check_mark').show();
+  } else {
+    $('.color .check_mark').hide();
+  }
+  if (keyConfig.hotkey.string !== '') {
+    $('.hotkey .check_mark').show();
+  } else {
+    $('.hotkey .check_mark').hide();
+  }
+  if (keyConfig.audio.path !== '') {
+    $('.audio .check_mark').show();
+  } else {
+    $('.audio .check_mark').hide();
+  }
+  if (keyConfig.clr.path !== '') {
+    $('.clr_options .check_mark').show();
+  } else {
+    $('.clr_options .check_mark').hide();
+  }
 }
 
+function removeDefaultKeys(keys) { // This is to try and keep the config.json file as small as possible
+  const defaultConfig = defaultKeyConfig();
+  for (const key in keys) {
+    if (keys.hasOwnProperty(key)) {
+      if (_.isEqual(keys[key], defaultConfig)) delete keys[key];
+    }
+  }
+  return keys;
+}
 
-/*
-
- function removeUnusedKeys() { // This is to try and keep the config.json file as small as possible
- const defaultConfig = getDefaultKeyConfig();
- for (const i in config.keys) {
- if (config.keys.hasOwnProperty(i)) {
- if (_.isEqual(config.keys[i], defaultConfig)) {
- delete config.keys[i];
- }
- }
- }
- }
-
- function sendImageChange(filePath, ext) {
- fs.stat(path.join(filePath), (err, stats) => {
- if (!err) {
- const m = Date.parse(stats.mtime.toString()) / 1000;
- const k = lastKey.join(',');
- clrIO.emit('image_change', { key: k, src: `images/${k}${ext}?m=${m}` });
- } else {
- console.log(JSON.stringify(err));
- }
- });
- }
- *!/*/
+function sendImageChange(filePath, ext) {
+  fs.stat(path.join(filePath), (err, stats) => {
+    if (!err) {
+      const m = Date.parse(stats.mtime.toString()) / 1000;
+      const k = lastKey.join(',');
+      // clrIO.emit('image_change', { key: k, src: `images/${k}${ext}?m=${m}` }); // todo
+    } else {
+      console.log(JSON.stringify(err));
+    }
+  });
+}
 
 function isURL(url) {
   return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/.test(url); // eslint-disable-line
@@ -459,4 +460,31 @@ function isURL(url) {
 function toTitleCase(str) {
   if (Array.isArray(str)) str = str.join(' ');
   return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+}
+
+function setProp(obj, str, val) {
+  str = str.split('.');
+  while (str.length > 1) {
+    obj = obj[str.shift()];
+  }
+  obj[str.shift()] = val;
+}
+
+// Display notification on center of window that auto disappears and darkens the main content
+function centerNOTY(type, text, timeout) {
+  const blanket = $('.blanket');
+  blanket.fadeIn(200); // Darken the body
+  noty({ // Show NOTY
+    layout: 'center',
+    type: type,
+    text: text,
+    animation: {
+      open: 'animated flipInX', // Animate.css class names
+      close: 'animated flipOutX', // Animate.css class names
+    },
+    timeout: timeout || 1500,
+    callback: {
+      onClose: () => blanket.fadeOut(1000), // Restore body
+    },
+  });
 }

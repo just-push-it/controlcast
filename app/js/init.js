@@ -45,7 +45,7 @@ let tracks = {}; // Holds all the audio tracks in memory to be played
 const images = {};
 
 const config = new Config(); // Load Config
-const tempKeys = {}; // Temp key settings before saving
+let tempKeys = {}; // Temp key settings before saving
 
 $(document).ready(() => { // On DOM ready
   for (let c = 0; c < 8; c++) { // Creates the top row key divs
