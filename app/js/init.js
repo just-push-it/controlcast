@@ -42,7 +42,7 @@ let css_editor;
 
 const keyboard = [];
 let tracks = {}; // Holds all the audio tracks in memory to be played
-const images = {};
+let images = {};
 
 const config = new Config(); // Load Config
 let tempKeys = {}; // Temp key settings before saving

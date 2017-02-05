@@ -11,7 +11,7 @@ function keyEvent(source, key, action, edit) {
   if (!edit) { // Only perform these actions if left-click on key - no right-click
     colorKey(key, action); // Color the key based on the action
     //playAudio(key, action); // Play Audio if used // todo
-    //sendCLR(key, action); // Send CLR event if used // todo
+    sendCLR(key, action); // Send CLR event if used
     //sendHotkey(key, action); // Send Hotkey if used // todo
   }
   if (action === 'press') {
@@ -262,14 +262,12 @@ function stopAudio(track) { // Stops the track
  }
  if (callback) return callback();
  return null;
- }
-
- function sendCLR(key, action) {
- if (action === 'release') return;
- if (!config.app.clr.enabled) return;
- const clr = get(config,
- `keys.${key.join(',')}.clr`
- );
- if (!clr || !clr.path) return;
- clrIO.emit('key_press', { key: key.join(','), options: clr });
  }*/
+
+function sendCLR(key, action) {
+  if (action === 'release') return;
+  if (!config.get('app.clr.enabled')) return;
+  const clr = config.get(`keys.${key.join(',')}.clr`);
+  if (!clr || !clr.path) return;
+  clrIO.emit('key_press', { key: key.join(','), options: clr });
+}

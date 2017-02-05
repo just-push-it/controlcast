@@ -35,7 +35,32 @@ function startCLR() {
 
   clrIO = io.listen(server, {});
   clrIO.on('connection', (socket) => { // Client Connect
-    sendImageData(socket);
+    if (!config.get('app.clr.enabled')) return;
+    let num = 0;
+    const keys = config.get('keys');
+    const count = Object.keys(keys).length;
+    images = {};
+    for (const key in keys) { // Loop through keys
+      if (keys.hasOwnProperty(key)) {
+        const p = keys[key].clr.path;
+        if (!p) {
+          num++;
+        } else {
+          const ext = path.parse(p).ext.toLowerCase();
+          fs.stat(path.join(__dirname, `clr/assets/images/${key}${ext}`), (err, stats) => {
+            if (!err) {
+              const m = Date.parse(stats.mtime.toString()) / 1000;
+              images[key] = { src: `images/${key}${ext}?m=${m}` };
+            } else {
+              console.log(JSON.stringify(err));
+            }
+            if (num++ >= count - 1) {
+              socket.emit('images', images);
+            }
+          });
+        }
+      }
+    }
   });
 }
 
@@ -49,35 +74,6 @@ function stopCLR(callback) {
     if (callback) return callback();
     return null;
   });
-}
-
-function sendImageData(socket) {
-  if (!config.get('app.clr.enabled')) return;
-  let num = 0;
-  const keys = config.get('keys');
-  const count = Object.keys(keys).length;
-  images = {};
-  for (const key in keys) { // Loop through keys
-    if (keys.hasOwnProperty(key)) {
-      const p = keys[key].clr.path;
-      if (!p) {
-        num++;
-      } else {
-        const ext = path.parse(p).ext.toLowerCase();
-        fs.stat(path.join(__dirname, `clr/assets/images/${key}${ext}`), (err, stats) => {
-          if (!err) {
-            const m = Date.parse(stats.mtime.toString()) / 1000;
-            images[key] = { src: `images/${key}${ext}?m=${m}` };
-          } else {
-            console.log(JSON.stringify(err));
-          }
-          if (num++ >= count - 1) {
-            socket.emit('images', images);
-          }
-        });
-      }
-    }
-  }
 }
 
 ipc.on('port_changed', () => {
