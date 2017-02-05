@@ -46,7 +46,7 @@ function readyOptions() {
     const action = parentClass === 'active' ? 'press' : 'release'; // Set action
     keyConfig.color[action] = $(`#${parentClass}_key_color`).data('color'); // Update the changed color
     tempKeys[lastKey.join(',')] = keyConfig; // Save to temp config
-    colorKey(lastKey, 'release');
+    colorKey(lastKey, 'release', keyConfig);
     checkmarks(); // Update gui checkmarks
   });
 
@@ -326,7 +326,8 @@ function readyOptions() {
 
   $('#clear_all').click(() => { // Reset key button was pressed
     tempKeys[lastKey.join(',')] = defaultKeyConfig();
-    colorKey(lastKey, 'release');
+    const keyConfig = getKeyConfig(lastKey);
+    colorKey(lastKey, 'release', keyConfig);
     setKeyOptions(); // Update all key settings to show default
   });
 
@@ -334,7 +335,7 @@ function readyOptions() {
     const keyConfig = getKeyConfig(lastKey);
     keyConfig.color = defaultKeyConfig().color;
     tempKeys[lastKey.join(',')] = keyConfig;
-    colorKey(lastKey, 'release');
+    colorKey(lastKey, 'release', keyConfig);
     setKeyOptions(); // Update key settings
   });
 
@@ -342,7 +343,7 @@ function readyOptions() {
     const keyConfig = getKeyConfig(lastKey);
     keyConfig.hotkey = defaultKeyConfig().hotkey;
     tempKeys[lastKey.join(',')] = keyConfig;
-    colorKey(lastKey, 'release');
+    colorKey(lastKey, 'release', keyConfig);
     setKeyOptions(); // Update key settings
   });
 
@@ -350,7 +351,7 @@ function readyOptions() {
     const keyConfig = getKeyConfig(lastKey);
     keyConfig.audio = defaultKeyConfig().audio;
     tempKeys[lastKey.join(',')] = keyConfig;
-    colorKey(lastKey, 'release');
+    colorKey(lastKey, 'release', keyConfig);
     setKeyOptions(); // Update key settings
   });
 
@@ -358,7 +359,7 @@ function readyOptions() {
     const keyConfig = getKeyConfig(lastKey);
     keyConfig.clr = defaultKeyConfig().clr;
     tempKeys[lastKey.join(',')] = keyConfig;
-    colorKey(lastKey, 'release');
+    colorKey(lastKey, 'release', keyConfig);
     setKeyOptions(); // Update key settings
   });
 
