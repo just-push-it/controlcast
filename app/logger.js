@@ -6,7 +6,7 @@ const path = require('path');
 require('winston-loggly-bulk');
 
 module.exports = () => {
-  const logDir = path.join(process.cwd(), './logs');
+  const logDir = path.join(process.env.APPDATA, 'ControlCast/logs');
 
   // Create log directory if it does not exist
   if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
