@@ -352,6 +352,6 @@ input[type="text"].num_input {
     width: 110px;
 }
 
-input#hotkey_string {
+input#hotkey_string, input#api_path {
     width: 260px;
 }

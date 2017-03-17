@@ -145,7 +145,7 @@ function createMainWindow() { // Loads main application window
     x: config.get('app.pos.x'),
     y: config.get('app.pos.y'),
     width: 900,
-    height: 760,
+    height: 780,
     resizable: false,
     icon: path.join(__dirname, 'images/icon.ico'),
     title: `ControlCast - ${global.app_version}`,
