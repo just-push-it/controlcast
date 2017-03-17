@@ -451,6 +451,7 @@ function setKeyOptions() {
   css_editor.setValue(keyConfig.clr.css);
   css_editor.clearSelection();
   checkmarks();
+  setIcons(lastKey, keyConfig);
 }
 
 function checkmarks() {
