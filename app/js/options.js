@@ -276,6 +276,15 @@ function readyOptions() {
   });
 
 
+  // Make sure a web address is given here
+  $('.api_request input').blur((event) => {
+    const str = $(event.currentTarget).val();
+    if (str === '') return;
+    if (!str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/)) {
+      centerNOTY('notify', 'That is not a known web address format.', 4000);
+    }
+  });
+
   // Options Changed
 
   $('.opt').on('input change', (event) => { // A savable option was changed, update the key config
@@ -357,6 +366,14 @@ function readyOptions() {
     setKeyOptions(); // Update key settings
   });
 
+  $('.api_request .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.api = defaultKeyConfig().api;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release', keyConfig);
+    setKeyOptions(); // Update key settings
+  });
+
   $('.clr_options .clear_opt').click(() => {
     const keyConfig = getKeyConfig(lastKey);
     keyConfig.clr = defaultKeyConfig().clr;
@@ -419,6 +436,7 @@ function setKeyOptions() {
   $('#volume_slider').slider('value', parseInt(keyConfig.audio.volume));
   $('#vol_val').text(`${keyConfig.audio.volume}%`);
   $(`input[name="audio_type"][value=${keyConfig.audio.type}]`).prop('checked', true);
+  $('#api_path').val(keyConfig.api.path); // API
   $('#clr_path').val(keyConfig.clr.path); // CLR
   $('#clr_pos').val(keyConfig.clr.pos);
   $('#animate-open').val(keyConfig.clr.animate.open.type);
@@ -438,6 +456,7 @@ function checkmarks() {
     $('.color .check_mark').hide();
     $('.hotkey .check_mark').hide();
     $('.audio .check_mark').hide();
+    $('.api_request .check_mark').hide();
     $('.clr_options .check_mark').hide();
     return;
   }
@@ -455,6 +474,11 @@ function checkmarks() {
     $('.audio .check_mark').show();
   } else {
     $('.audio .check_mark').hide();
+  }
+  if (keyConfig.api.path !== '') {
+    $('.api_request .check_mark').show();
+  } else {
+    $('.api_request .check_mark').hide();
   }
   if (keyConfig.clr.path !== '') {
     $('.clr_options .check_mark').show();

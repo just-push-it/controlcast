@@ -242,6 +242,9 @@ function defaultKeyConfig() { // Sets the default key config
       type: 'normal',
       volume: '50',
     },
+    api: {
+      path: '',
+    },
     clr: {
       path: '',
       pos: '',
