@@ -62,7 +62,7 @@ module.exports = (grunt) => {
         exe: `ControlCast.exe`,
         authors: 'DBKynd',
         loadingGif: './loading.gif',
-        iconUrl: 'https://raw.githubusercontent.com/dbkynd/controlcast/master/images/icon.ico',
+        iconUrl: 'https://raw.githubusercontent.com/dbkynd/controlcast/master/app/images/icon.ico',
         setupIcon: './app/images/icon.ico',
         noMsi: true,
         remoteReleases: `${releaseUrl}/win32/x86`,

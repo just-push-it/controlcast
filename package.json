@@ -13,7 +13,7 @@
     "grunt-aws-s3": "^0.14.5",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-electron-installer": "^2.1.0",
-    "grunt-electron-packager": "0.0.8",
+    "grunt-electron-packager": "^0.0.8",
     "grunt-shell": "^2.1.0",
     "load-grunt-tasks": "^3.5.2"
   },
