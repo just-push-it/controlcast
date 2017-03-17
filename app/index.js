@@ -92,7 +92,7 @@ global.release_url = require('../package.json').releaseUrl; // Store releaseUrl 
 
 robot.setKeyboardDelay(50); // Set delay for each keypress for OBS
 
-const configVersion = 5;
+const configVersion = 6;
 const config = new Config({
   defaults: {
     app: {
@@ -114,7 +114,17 @@ const config = new Config({
   },
 });
 
+
+const oldConfigPath = path.join(process.cwd(), './config.json');
+
 updateOldConfig();
+fs.exists(oldConfigPath, exists => {
+  if (exists) {
+    fs.unlink(oldConfigPath, err => {
+      if (err) logger.error('Error removing old config file', err);
+    });
+  }
+});
 updateNewConfig();
 woopra.identify(config.get('app.id')).push();
 
@@ -251,7 +261,6 @@ ipc.on('set_port', (e, data) => {
 
 
 function updateOldConfig() {
-  const oldConfigPath = path.join(process.cwd(), '../config.json');
   if (!fs.existsSync(oldConfigPath)) return;
   let oldConfig;
   try {
@@ -285,15 +294,22 @@ function updateOldConfig() {
     }
   }
   config.set(oldConfig);
-  fs.unlink(oldConfigPath, err => {
-    if (err) logger.error('Error removing old config file', err);
-  });
 }
 
 function updateNewConfig() {
   while (config.get('app.version') < configVersion) {
+    const keys = config.get('keys');
     switch (config.get('app.version')) {
       case 5:
+        for (const key in keys) {
+          if (keys.hasOwnProperty(key)) {
+            keys[key].api = {
+              path: '',
+            };
+          }
+        }
+        config.set('keys', keys);
+        config.set('app.version', 6);
         break;
       default:
       // Do Nothing
