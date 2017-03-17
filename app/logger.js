@@ -2,10 +2,11 @@
 const logger = require('winston');
 const moment = require('moment');
 const fs = require('fs');
+const path = require('path');
 require('winston-loggly-bulk');
 
 module.exports = () => {
-  const logDir = '../logs';
+  const logDir = path.join(process.cwd(), './logs');
 
   // Create log directory if it does not exist
   if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
