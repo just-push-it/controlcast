@@ -248,10 +248,41 @@ function sendAPI(key, action, keyConfig) {
   if (action === 'release') return;
   const api = keyConfig.api;
   if (!api || !api.path) return;
-  ipc.send('api_request', { key: key.join(','), api });
+  if (!api.path.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})(\:[0-9]*)?([\/\w \.-]*)*\/?$/)) { // eslint-disable-line
+    return;
+  }
+  const oldColor = keyConfig.color.release;
+  keyConfig.color.release = 'YELLOW';
+  colorKey(key, 'release', keyConfig);
+  fetch
+    .get(api.path)
+    .then(res => {
+      if (res.statusCode !== 200) {
+        err();
+      } else if (res.body.error) {
+        err();
+      } else {
+        ok();
+      }
+    }, () => {
+      err();
+    });
+
+  function ok() {
+    keyConfig.color.release = 'GREEN';
+    colorKey(key, 'release', keyConfig);
+    setTimeout(() => {
+      keyConfig.color.release = oldColor;
+      colorKey(key, 'release', keyConfig);
+    }, 3000);
+  }
+
+  function err() {
+    keyConfig.color.release = 'RED';
+    colorKey(key, 'release', keyConfig);
+    setTimeout(() => {
+      keyConfig.color.release = oldColor;
+      colorKey(key, 'release', keyConfig);
+    }, 3000);
+  }
 }
-
-
-ipc.on('api_response', (e, data) => {
-  console.log(data);
-});

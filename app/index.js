@@ -13,7 +13,6 @@ const path = require('path');
 const spawn = require('child_process').spawn;
 const robot = require('robotjs');
 const logger = require('./logger')();
-const request = require('superagent');
 
 const Woopra = require('woopra');
 const woopra = new Woopra('ControlCast.tv', {});
@@ -257,29 +256,6 @@ ipc.on('set_port', (e, data) => {
   if (mainWindow) mainWindow.webContents.send('port_changed'); // Restarts the CLR browser on new port
 });
 
-ipc.on('api_request', (e, data) => {
-  request
-    .get(data.api.path)
-    .then(res => {
-      if (res.statusCode !== 200) {
-        err();
-      } else if (res.body.error) {
-        err();
-      } else {
-        ok();
-      }
-    }, () => {
-      err();
-    });
-
-  function ok() {
-    if (mainWindow) mainWindow.webContents.send('api_response', { key: data.key, ok: true });
-  }
-
-  function err() {
-    if (mainWindow) mainWindow.webContents.send('api_response', { key: data.key, ok: false });
-  }
-});
 
 // Config / Settings Changes
 

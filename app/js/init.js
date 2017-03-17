@@ -25,6 +25,7 @@ const keycode = require('keycode');
 const fs = require('fs');
 const request = require('request');
 const moment = require('moment');
+const fetch = require('superagent');
 
 window.$ = window.jQuery = require('jquery');
 require('./js/jquery/jquery-ui.min.js');
