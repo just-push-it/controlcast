@@ -5,6 +5,17 @@ const electronVersion = require('./package.json').devDependencies.electron.repla
 const releaseUrl = require('./package.json').releaseUrl;
 const certPassword = require('../CodeSigningPassword.json').password;
 
+const ignore = [
+  '^/.idea',
+  '^/build',
+  '^/dist',
+  '^/node_modules/(grunt.*|electron(?!-config).*)',
+  '^/Gruntfile.js',
+  '^/clr/assets/images/*|^/eslint-rules',
+  '^/\.git.*', // eslint-disable-line
+  '^/\.*\.md', // eslint-disable-line
+];
+
 module.exports = (grunt) => {
   require('load-grunt-tasks')(grunt);
   grunt.initConfig({
@@ -17,8 +28,7 @@ module.exports = (grunt) => {
             asar: false,
             prune: true,
             icon: './app/images/icon.ico',
-            ignore: '^/.idea|^/build|^/dist|^/node_modules/(grunt.*|electron-?((?!config)|grunt).*)|^/Gruntfile.js|' +
-            '^/clr/assets/images/*|^/eslint-rules',
+            ignore: ignore.join('|'),
             dir: '.',
             out: `./build/${appVersion}`,
             name: 'ControlCast',
