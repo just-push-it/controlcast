@@ -30,6 +30,7 @@
     "robotjs": "github:dbkynd/robotjs",
     "simpleflakes": "^1.2.3",
     "socket.io": "^1.7.2",
+    "superagent": "^3.5.0",
     "underscore": "^1.8.3",
     "usb-detection": "^1.4.0",
     "winston": "^2.3.1",

@@ -280,7 +280,7 @@ function readyOptions() {
   $('.api_request input').blur((event) => {
     const str = $(event.currentTarget).val();
     if (str === '') return;
-    if (!str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/)) {
+    if (!str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})(\:[0-9]*)?([\/\w \.-]*)*\/?$/)) { // eslint-disable-line
       centerNOTY('notify', 'That is not a known web address format.', 4000);
     }
   });

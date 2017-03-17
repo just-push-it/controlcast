@@ -11,6 +11,7 @@ function keyEvent(source, key, action, edit) {
   if (!edit) { // Only perform these actions if left-click on key - no right-click
     colorKey(key, action, keyConfig); // Color the key based on the action
     playAudio(key, action, keyConfig); // Play Audio if used
+    sendAPI(key, action, keyConfig); // Send API event if used
     sendCLR(key, action, keyConfig); // Send CLR event if used
     sendHotkey(key, action, keyConfig); // Send Hotkey if used
   }
@@ -242,3 +243,15 @@ function sendCLR(key, action, keyConfig) {
   if (!clr || !clr.path) return;
   clrIO.emit('key_press', { key: key.join(','), options: clr });
 }
+
+function sendAPI(key, action, keyConfig) {
+  if (action === 'release') return;
+  const api = keyConfig.api;
+  if (!api || !api.path) return;
+  ipc.send('api_request', { key: key.join(','), api });
+}
+
+
+ipc.on('api_response', (e, data) => {
+  console.log(data);
+});
