@@ -393,6 +393,7 @@ function readyOptions() {
 function setIcons(key, keyConfig) {
   const usingHotkey = keyConfig.hotkey.string; // Gets bool if we are using hotkey
   const usingAudio = keyConfig.audio.path; // Gets bool if we are using audio
+  const usingAPI = keyConfig.api.path; // Gets bool if we are using api
   let usingCLR = null;
   if (config.get('app.clr.enabled')) { // Gets bool if we are using clr
     usingCLR = keyConfig.clr.path;
@@ -400,13 +401,15 @@ function setIcons(key, keyConfig) {
   let j = 0;
   if (usingHotkey) j++;
   if (usingAudio) j++;
+  if (usingAPI) j++;
   if (usingCLR) j++;
   const hotkeyImg = usingHotkey ? '<img src=\'images/hotkey.png\'>' : '';
   const audioImg = usingAudio ? '<img src=\'images/audio.png\'>' : '';
   const clrImg = usingCLR ? '<img src=\'images/clr.png\'>' : '';
+  const apiImg = usingAPI ? '<img src=\'images/cloud.png\'>' : '';
   const guiKey = getGuiKey(key);
   // Sets the inner key div to show associated icons to events
-  guiKey.html(`<div><span>${hotkeyImg}${audioImg}${clrImg}</span></div>`);
+  guiKey.html(`<div><span>${hotkeyImg}${audioImg}${clrImg}${apiImg}</span></div>`);
   if (j > 2) {
     $(guiKey).find('div').addClass('shift_up');
   } else {

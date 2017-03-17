@@ -274,7 +274,7 @@ function sendAPI(key, action, keyConfig) {
     setTimeout(() => {
       keyConfig.color.release = oldColor;
       colorKey(key, 'release', keyConfig);
-    }, 3000);
+    }, 1000);
   }
 
   function err() {
@@ -283,6 +283,6 @@ function sendAPI(key, action, keyConfig) {
     setTimeout(() => {
       keyConfig.color.release = oldColor;
       colorKey(key, 'release', keyConfig);
-    }, 3000);
+    }, 1000);
   }
 }
