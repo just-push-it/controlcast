@@ -17,8 +17,8 @@ module.exports = (grunt) => {
             asar: false,
             prune: true,
             icon: './app/images/icon.ico',
-            ignore: '^/.idea|^/build|^/dist|^/node_modules/(electron-*|' +
-            'grunt|grunt-*|rmdir)|^/Gruntfile.js|^/clr/assets/images/*',
+            ignore: '^/.idea|^/build|^/dist|^/node_modules/(grunt.*|electron-((?!config)|grunt).*)|^/Gruntfile.js|' +
+            '^/clr/assets/images/*|^/eslint-rules',
             dir: '.',
             out: `./build/${appVersion}`,
             name: 'ControlCast',
