@@ -114,8 +114,7 @@ const config = new Config({
   },
 });
 
-
-const oldConfigPath = path.join(process.cwd(), './config.json');
+const oldConfigPath = path.join(process.env.LOCALAPPDATA, 'ControlCast/config.json');
 
 updateOldConfig();
 fs.exists(oldConfigPath, exists => {
@@ -125,6 +124,21 @@ fs.exists(oldConfigPath, exists => {
     });
   }
 });
+const exec = require('child_process').exec;
+const logPath = path.join(process.env.LOCALAPPDATA, 'ControlCast/logs');
+if (fs.existsSync(logPath)) {
+  exec(`rd /s /q "${logPath}"`, err => {
+    if (err) {
+      logger.debug('Windows 1st error removing dir, trying a second time...');
+      // Sometimes this has to ran twice to succeed.
+      exec(`rd /s /q "${logPath}"`, err2 => {
+        if (err2) {
+          logger.debug('Windows 2nd error removing dir', err2);
+        }
+      });
+    }
+  });
+}
 updateNewConfig();
 woopra.identify(config.get('app.id')).push();
 
@@ -269,7 +283,7 @@ function updateOldConfig() {
     logger.error('Error loading old config file to transfer', e);
     return;
   }
-  while (config.get('app.version') > oldConfig.app.version) {
+  while (oldConfig.app.version < 5) {
     switch (oldConfig.app.version) {
       case 2:
         oldConfig.app.id = simpleflake.simpleflake().toString();
