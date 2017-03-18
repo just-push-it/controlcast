@@ -6,9 +6,9 @@
 /* eslint new-cap: 0 */
 /* eslint prefer-const: 0 */
 
+const Config = require('electron-config');
 const remote = require('electron').remote;
 const Menu = remote.Menu;
-const MenuItem = remote.MenuItem;
 const dialog = remote.dialog;
 const Tray = remote.Tray;
 const autoUpdater = remote.autoUpdater;
@@ -24,44 +24,29 @@ const noty = require('noty');
 const keycode = require('keycode');
 const fs = require('fs');
 const request = require('request');
+const moment = require('moment');
+const fetch = require('superagent');
 
 window.$ = window.jQuery = require('jquery');
 require('./js/jquery/jquery-ui.min.js');
 require('./js/jquery/alphanum.min.js');
 
-let config; // Holds all the app and key settings
+const releaseUrl = remote.getGlobal('release_url');
+
 let launchpad; // Our launchpadder instance
 let usbConnected; // Bool for Launchpad USB state
 let reconnectTimer; // Reconnection timer
 let lastKey = [0, 0]; // Stores the last key pressed
-let notyUpdates;
+let notyUpdates = false;
 let clrRunning = false;
 let css_editor;
 
 const keyboard = [];
-const tracks = {}; // Holds all the audio tracks in memory to be played
-const images = {};
+let tracks = {}; // Holds all the audio tracks in memory to be played
+let images = {};
 
-const app_version = remote.getGlobal('app_version');
-const releaseUrl = remote.getGlobal('release_url');
-
-ipc.on('config', (e, data) => { // Sent from main app on DOM ready. Sends the current config
-  config = data; // Save config object
-  setAllLights(); // Set all gui and midi lights to released state
-  setKeyOptions(); // Set all key configs
-  loadTracks(); // Load audio tracks into memory to be played immediately on demand
-  if (titleMenu) {
-    titleMenu.items[1].submenu.items[0].checked = config.app.close_to_tray;
-    titleMenu.items[1].submenu.items[1].checked = config.app.auto_start;
-    titleMenu.items[1].submenu.items[2].submenu.items[0].checked = config.app.clr.enabled;
-  } // Set title menu checkbox
-  if (config.app.clr.enabled && !clrRunning) {
-    $('.clr_options').show();
-    startCLR();
-  } else {
-    $('#flush_clr').hide();
-  }
-});
+const config = new Config(); // Load Config
+let tempKeys = {}; // Temp key settings before saving
 
 $(document).ready(() => { // On DOM ready
   for (let c = 0; c < 8; c++) { // Creates the top row key divs
@@ -88,25 +73,26 @@ $(document).ready(() => { // On DOM ready
     $('.launchpad .keys_side').append(newDiv);
   }
 
-  $('body').fadeIn(200);
+  if (config.get('app.clr.enabled')) {
+    $('.clr_options').show();
+  } else {
+    $('#flush_clr').hide();
+  }
+  if (!clrRunning) startCLR();
+
+  readyLaunchpad();
+  readyOptions();
   isMidiConnected(); // Set midi_connected on load
 
+  $('body').fadeIn(200);
+
+  setAllLights(); // Set all gui and midi lights to released state
+  loadTracks(); // Load audio tracks into memory to be played immediately on demand
+
   $('#update_available').click(() => {
-    ipc.send('quit_and_install');
+    ipc.send('quit_and_install'); // Force quit and update
   });
 });
-
-function get(obj, key) { // Search and return a nested element in an object or null
-  return key.split('.').reduce((o, x) => (typeof o === 'undefined' || o === null) ? o : o[x], obj);
-}
-
-function set(obj, str, val) {
-  str = str.split('.');
-  while (str.length > 1) {
-    obj = obj[str.shift()];
-  }
-  obj[str.shift()] = val;
-}
 
 function connectToLaunchpad() { // Attempt to connect to the Launchpad
   const midiIn = new midi.input(); // Create new Midi input
@@ -185,14 +171,15 @@ function isMidiConnected() {
 }
 
 function loadTracks() { // Load track data to array
-  for (const key in config.keys) { // Loop through keys
-    if (config.keys.hasOwnProperty(key)) {
-      const audio = config.keys[key].audio; // Get key audio settings
+  console.log('Loading Audio Tracks');
+  tracks = {};
+  const keys = config.get('keys');
+  for (const key in keys) { // Loop through keys
+    if (keys.hasOwnProperty(key)) {
+      const audio = keys[key].audio; // Get key audio settings
       if (audio && audio.path) {
         const audioPath = path.normalize(audio.path);
-        if (!tracks[key] || tracks[key].src !== audioPath) {
-          tracks[key] = new Audio(audioPath);
-        }
+        tracks[key] = new Audio(audioPath);
         tracks[key].volume = audio.volume / 100;
       }
     }
@@ -208,9 +195,7 @@ function checkForUpdates() {
   autoUpdater.checkForUpdates();
 }
 
-autoUpdater.on('error', (err) => {
-  console.log('Squirrel error', err);
-});
+autoUpdater.on('error', console.error);
 
 autoUpdater.on('checking-for-update', () => {
   console.log('Squirrel: checking-for-update');
@@ -236,3 +221,47 @@ autoUpdater.on('update-downloaded', () => {
   console.log('Squirrel: update-downloaded');
   $('#update_available').show();
 });
+
+function getKeyConfig(key) {
+  if (Array.isArray(key)) key = key.join(',');
+  return tempKeys[key] || config.get(`keys.${key}`) || defaultKeyConfig();
+}
+
+function defaultKeyConfig() { // Sets the default key config
+  return {
+    description: '',
+    color: {
+      press: 'OFF',
+      release: 'OFF',
+    },
+    hotkey: {
+      type: 'send',
+      string: '',
+    },
+    audio: {
+      path: '',
+      type: 'normal',
+      volume: '50',
+    },
+    api: {
+      path: '',
+    },
+    clr: {
+      path: '',
+      pos: '',
+      animate: {
+        open: {
+          delay: '0.0',
+          type: 'fadeIn',
+          duration: '1.0',
+        },
+        close: {
+          delay: '2.0',
+          type: 'fadeOut',
+          duration: '1.0',
+        },
+      },
+      css: '.img {\n  width: 50%;\n}',
+    },
+  };
+}

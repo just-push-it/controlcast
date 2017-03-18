@@ -5,6 +5,17 @@ const electronVersion = require('./package.json').devDependencies.electron.repla
 const releaseUrl = require('./package.json').releaseUrl;
 const certPassword = require('../CodeSigningPassword.json').password;
 
+const ignore = [
+  '^/.idea',
+  '^/build',
+  '^/dist',
+  '^/node_modules/(grunt.*|electron(?!-config).*)',
+  '^/Gruntfile.js',
+  '^/clr/assets/images/*|^/eslint-rules',
+  '^/\.git.*', // eslint-disable-line
+  '^/\.*\.md', // eslint-disable-line
+];
+
 module.exports = (grunt) => {
   require('load-grunt-tasks')(grunt);
   grunt.initConfig({
@@ -17,8 +28,7 @@ module.exports = (grunt) => {
             asar: false,
             prune: true,
             icon: './app/images/icon.ico',
-            ignore: '^/.idea|^/build|^/dist|^/node_modules/(electron-*|' +
-            'grunt|grunt-*|rmdir)|^/Gruntfile.js|^/clr/assets/images/*',
+            ignore: ignore.join('|'),
             dir: '.',
             out: `./build/${appVersion}`,
             name: 'ControlCast',
@@ -52,7 +62,7 @@ module.exports = (grunt) => {
         exe: `ControlCast.exe`,
         authors: 'DBKynd',
         loadingGif: './loading.gif',
-        iconUrl: 'https://raw.githubusercontent.com/dbkynd/controlcast/master/images/icon.ico',
+        iconUrl: 'https://github.com/dbkynd/controlcast/raw/master/app/images/icon.ico',
         setupIcon: './app/images/icon.ico',
         noMsi: true,
         remoteReleases: `${releaseUrl}/win32/x86`,
@@ -65,7 +75,7 @@ module.exports = (grunt) => {
         exe: `ControlCast.exe`,
         authors: 'DBKynd',
         loadingGif: './loading.gif',
-        iconUrl: 'https://raw.githubusercontent.com/dbkynd/controlcast/master/images/icon.ico',
+        iconUrl: 'https://github.com/dbkynd/controlcast/raw/master/app/images/icon.ico',
         setupIcon: './app/images/icon.ico',
         noMsi: true,
         remoteReleases: `${releaseUrl}/win32/x64`,
@@ -145,7 +155,9 @@ module.exports = (grunt) => {
   ]);
 
   grunt.registerTask('rename', 'Rename the Setup.exe file after building installer.', (platform, arch) => {
-    fs.rename(`./dist/win32/${arch}/Setup.exe`, `./dist/win32/${arch}/ControlCast_${appVersion}_${arch}.exe`);
+    fs.rename(`./dist/win32/${arch}/Setup.exe`, `./dist/win32/${arch}/ControlCast_${appVersion}_${arch}.exe`, err => {
+      if (err) console.error(err); // eslint-disable-line
+    });
   });
 
   grunt.registerTask('upload', [

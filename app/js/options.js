@@ -4,11 +4,12 @@
 /* eslint no-undef: 0 */
 /* eslint no-console: 0 */
 
-$(document).ready(() => {
+function readyOptions() {
+  // When hovering in the options window
   $('.options').mouseenter((event) => { // Adds a border around the key to show which is being edited
     const key = getGuiKey(lastKey);
     $(key).addClass('editing'); // Show the last key
-    $(`.center.c${lastKey.join('-')}`).addClass('editing'); // how center key border if center key
+    $(`.center.c${lastKey.join('-')}`).addClass('editing'); // Show center key border if center key
     $(event.currentTarget).mouseleave(() => {
       $(key).removeClass('editing'); // Don't show the last key
       $('.center').removeClass('editing'); // Remove border from all center keys
@@ -28,7 +29,7 @@ $(document).ready(() => {
 
   $('.color_select div').click((event) => {
     const parent = $(event.currentTarget).parent(); // Target the wrapper div for all the colors
-    let color = $(event.currentTarget).data('color'); // Get the color we clicked on
+    const color = $(event.currentTarget).data('color'); // Get the color we clicked on
     // Determine which action group we are dealing with
     const parentClass = parent.hasClass('active') ? 'active' : 'inactive';
     parent.children().removeClass('selected'); // Remove the selected class from everything
@@ -39,42 +40,36 @@ $(document).ready(() => {
     } else {
       $(`.color_select.${parentClass} div img`).removeClass('selected');
     }
-    color = color.split('_'); // Format the color name to be gui friendly
-    for (let i = 0; i < color.length; i++) {
-      color[i] = toTitleCase(color[i]);
-    }
-    $(`.color_select.${parentClass} span`).text(color.join(' ')); // Set the color name to our new gui friendly name
-    const keyConfig = getKeyConfig(); // Get the key config or defaults
+    // Set the color name to our new gui friendly name
+    $(`.color_select.${parentClass} span`).text(toTitleCase(color.split('_')));
+    const keyConfig = getKeyConfig(lastKey); // Get the key config or defaults
     const action = parentClass === 'active' ? 'press' : 'release'; // Set action
     keyConfig.color[action] = $(`#${parentClass}_key_color`).data('color'); // Update the changed color
-    config.keys[lastKey.join(',')] = keyConfig; // Save to config
-    colorKey(lastKey, 'release');
-    checkmarks();
+    tempKeys[lastKey.join(',')] = keyConfig; // Save to temp config
+    colorKey(lastKey, 'release', keyConfig);
+    checkmarks(); // Update gui checkmarks
   });
 
-  $('#volume_slider').slider({ // Volume slider options
-    min: 0,
-    max: 100,
-    range: 'min',
-    animate: true,
-    slide: (event, ui) => {
-      // Reset track volume if track exists
-      if (tracks[lastKey.join(',')]) tracks[lastKey.join(',')].volume = ui.value / 100;
-      const volVal = $('#vol_val');
-      $(volVal).text(`${ui.value}%`); // Set volume label
-      const keyConfig = getKeyConfig(); // Get the key config or defaults
-      keyConfig.audio.volume = $(volVal).text().replace('%', ''); // Save to volume to the key config
-      config.keys[lastKey.join(',')] = keyConfig; // Save to config
-    },
+  // Discard button clicked
+  $('#discard_settings').click(() => {
+    tempKeys = {}; // Clear all temp settings
+    setKeyOptions(); // Reset current key config to options
+    setAllLights(); // Set all gui and midi lights to released state
+    loadTracks(); // Load audio tracks into memory to be played immediately on demand
   });
 
-  $('#save_settings').click(() => { // Save button clicked
-    removeUnusedKeys(); // Remove any default, unused, keys to keep the config file size as small as possible
-    ipc.send('save_config', config); // Send changed config to main app to be saved
+  // Save button clicked
+  $('#save_settings').click(() => {
+    const keys = config.get('keys'); // Get current key settings
+    for (const key in tempKeys) { // Loop through all temp keys
+      if (tempKeys.hasOwnProperty(key)) {
+        keys[key] = tempKeys[key]; // Overwrite with new key
+      }
+    }
+    config.set('keys', removeDefaultKeys(keys)); // Save changed keys to file
+    tempKeys = {}; // Clear all temp keys
+    centerNOTY('success', 'Save Successful!');
   });
-
-  // Discard button clicked - Get unchanged config from main app
-  $('#discard_settings').click(() => ipc.send('get_config'));
 
   $('#kill_audio').click(() => { // Stop All Audio button was pressed
     for (const track in tracks) { // Loop through all tracks in the tracks object
@@ -84,38 +79,25 @@ $(document).ready(() => {
     }
   });
 
-
-  // Clear Buttons
-
-
-  $('#clear_all').click(() => { // Reset key button was pressed
-    config.keys[lastKey.join(',')] = getDefaultKeyConfig(); // Save default key config to this key
-    colorKey(lastKey, 'release');  // Reset key color
-    setKeyOptions(); // Update all key settings to show default
+  const volumeSlider = $('#volume_slider');
+  volumeSlider.slider({ // Volume slider options
+    min: 0,
+    max: 100,
+    range: 'min',
+    animate: true,
+    slide: (event, ui) => {
+      // Reset track volume if track exists
+      if (tracks[lastKey.join(',')]) tracks[lastKey.join(',')].volume = ui.value / 100;
+      $('#vol_val').text(`${ui.value}%`); // Set volume label
+    },
   });
 
-  $('.color .clear_opt').click(() => {
-    config.keys[lastKey.join(',')].color = getDefaultKeyConfig().color;
-    colorKey(lastKey, 'release');  // Reset key color
-    setKeyOptions(); // Update key settings
-  });
-
-  $('.hotkey .clear_opt').click(() => {
-    config.keys[lastKey.join(',')].hotkey = getDefaultKeyConfig().hotkey;
-    colorKey(lastKey, 'release');  // Reset key color
-    setKeyOptions(); // Update key settings
-  });
-
-  $('.audio .clear_opt').click(() => { // Clear hotkey button was pressed
-    config.keys[lastKey.join(',')].audio = getDefaultKeyConfig().audio;
-    colorKey(lastKey, 'release');  // Reset key color
-    setKeyOptions(); // Update key settings
-  });
-
-  $('.clr_options .clear_opt').click(() => {
-    config.keys[lastKey.join(',')].clr = getDefaultKeyConfig().clr;
-    colorKey(lastKey, 'release');  // Reset key color
-    setKeyOptions(); // Update key settings
+  volumeSlider.mousedown(() => {
+    volumeSlider.mouseleave(() => {
+      const keyConfig = getKeyConfig(lastKey); // Get the key config or defaults
+      keyConfig.audio.volume = $('#vol_val').text().replace('%', '');
+      tempKeys[lastKey.join(',')] = keyConfig; // Save to temp config
+    });
   });
 
 
@@ -159,13 +141,13 @@ $(document).ready(() => {
       if (combo.key) display.push(combo.key);
       // Stringify the combo key options array and display it in the text field
       $(keydownEvent.currentTarget).val(display.join(' + '));
-      const keyConfig = getKeyConfig();
+      const keyConfig = getKeyConfig(lastKey);
       keyConfig.hotkey.string = $(keydownEvent.currentTarget).val();
-      config.keys[lastKey.join(',')] = keyConfig; // Save to config
-      colorKey(lastKey, 'release');
+      tempKeys[lastKey.join(',')] = keyConfig; // Save to config
+      setIcons(lastKey, keyConfig);
       checkmarks();
     }).alphanum({
-      allow: '+`-[]\\;\',./*',
+      allow: '+`-[]\\;\',./!*',
       allowOtherCharSets: false,
     });
     $(event.currentTarget).keyup((keyupEvent) => { // Key released while focused
@@ -294,14 +276,22 @@ $(document).ready(() => {
   });
 
 
+  // Make sure a web address is given here
+  $('.api_request input').blur((event) => {
+    const str = $(event.currentTarget).val();
+    if (str === '') return;
+    if (!isURL(str)) { // eslint-disable-line
+      centerNOTY('notify', 'That is not a known web address format.', 4000);
+    }
+  });
+
   // Options Changed
 
-
   $('.opt').on('input change', (event) => { // A savable option was changed, update the key config
-    const keyConfig = getKeyConfig();
-    set(keyConfig, $(event.currentTarget).data('config'), $(event.currentTarget).val());
-    config.keys[lastKey.join(',')] = keyConfig;
-    colorKey(lastKey, 'release');
+    const keyConfig = getKeyConfig(lastKey);
+    setProp(keyConfig, $(event.currentTarget).data('config'), $(event.currentTarget).val());
+    tempKeys[lastKey.join(',')] = keyConfig;
+    setIcons(lastKey, keyConfig);
     checkmarks();
   });
 
@@ -315,10 +305,12 @@ $(document).ready(() => {
   css_editor.getSession().setTabSize(2);
   css_editor.$blockScrolling = Infinity;
 
-  css_editor.getSession().on('change', () => {
-    const keyConfig = getKeyConfig();
-    keyConfig.clr.css = css_editor.getSession().getValue();
-    config.keys[lastKey.join(',')] = keyConfig;
+  css_editor.on('focus', () => {
+    css_editor.getSession().on('change', () => {
+      const keyConfig = getKeyConfig();
+      keyConfig.clr.css = css_editor.getSession().getValue();
+      tempKeys[lastKey.join(',')] = keyConfig;
+    });
   });
 
   $('#reset_clr_css').click(() => {
@@ -339,19 +331,99 @@ $(document).ready(() => {
     maxPreDecimalPlaces: 3,
   });
 
-  $('#flush_clr').click(() => clrIO.emit('flush'));
 
-  ipc.send('get_config');
-});
+  // Clear Buttons
+
+
+  $('#clear_all').click(() => { // Reset key button was pressed
+    tempKeys[lastKey.join(',')] = defaultKeyConfig();
+    const keyConfig = getKeyConfig(lastKey);
+    colorKey(lastKey, 'release', keyConfig);
+    setKeyOptions(); // Update all key settings to show default
+  });
+
+  $('.color .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.color = defaultKeyConfig().color;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release', keyConfig);
+    setKeyOptions(); // Update key settings
+  });
+
+  $('.hotkey .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.hotkey = defaultKeyConfig().hotkey;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release', keyConfig);
+    setKeyOptions(); // Update key settings
+  });
+
+  $('.audio .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.audio = defaultKeyConfig().audio;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release', keyConfig);
+    setKeyOptions(); // Update key settings
+  });
+
+  $('.api_request .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.api = defaultKeyConfig().api;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release', keyConfig);
+    setKeyOptions(); // Update key settings
+  });
+
+  $('.clr_options .clear_opt').click(() => {
+    const keyConfig = getKeyConfig(lastKey);
+    keyConfig.clr = defaultKeyConfig().clr;
+    tempKeys[lastKey.join(',')] = keyConfig;
+    colorKey(lastKey, 'release', keyConfig);
+    setKeyOptions(); // Update key settings
+  });
+
+
+  // General
+
+
+  $('#flush_clr').click(() => clrIO.emit('flush'));
+  setKeyOptions(); // Set 0,0 key config on load
+}
+
+function setIcons(key, keyConfig) {
+  const usingHotkey = keyConfig.hotkey.string; // Gets bool if we are using hotkey
+  const usingAudio = keyConfig.audio.path; // Gets bool if we are using audio
+  const usingAPI = keyConfig.api.path; // Gets bool if we are using api
+  let usingCLR = null;
+  if (config.get('app.clr.enabled')) { // Gets bool if we are using clr
+    usingCLR = keyConfig.clr.path;
+  }
+  let j = 0;
+  if (usingHotkey) j++;
+  if (usingAudio) j++;
+  if (usingAPI) j++;
+  if (usingCLR) j++;
+  const hotkeyImg = usingHotkey ? '<img src=\'images/hotkey.png\'>' : '';
+  const audioImg = usingAudio ? '<img src=\'images/audio.png\'>' : '';
+  const clrImg = usingCLR ? '<img src=\'images/clr.png\'>' : '';
+  const apiImg = usingAPI ? '<img src=\'images/cloud.png\'>' : '';
+  const guiKey = getGuiKey(key);
+  // Sets the inner key div to show associated icons to events
+  guiKey.html(`<div><span>${hotkeyImg}${audioImg}${clrImg}${apiImg}</span></div>`);
+  if (j > 2) {
+    $(guiKey).find('div').addClass('shift_up');
+  } else {
+    $(guiKey).find('div').removeClass('shift_up');
+  }
+}
 
 // Update all the key gui elements
 function setKeyOptions() {
-  // Get the key settings if they exist, or defaults
-  const keyConfig = get(config, `keys.${lastKey.join(',')}`) || getDefaultKeyConfig();
+  const keyConfig = getKeyConfig(lastKey);
   const colorSelectInactive = $('.color_select.inactive div img');
   const colorSelectActive = $('.color_select.active div img');
   $('#key_description').val(keyConfig.description); // Set key description
-  $('.color_select div').removeClass('selected');
+  $('.color_select div').removeClass('selected');  // Colors
   $('.color_select div img').removeClass('selected');
   $(`.color_select.inactive div[data-color=${keyConfig.color.release}]`).addClass('selected');
   $(`.color_select.active div[data-color=${keyConfig.color.press}]`).addClass('selected');
@@ -361,13 +433,14 @@ function setKeyOptions() {
   $(colorSelectActive).text(toTitleCase(keyConfig.color.press));
   $('#inactive_key_color').data('color', keyConfig.color.release);
   $('#active_key_color').data('color', keyConfig.color.press);
-  $('#hotkey_string').val(keyConfig.hotkey.string); // Set hotkey string
+  $('#hotkey_string').val(keyConfig.hotkey.string); // Hotkey
   $(`input[name="hotkey_type"][value=${keyConfig.hotkey.type}]`).prop('checked', true);
-  $('#audio_path').val(keyConfig.audio.path);
+  $('#audio_path').val(keyConfig.audio.path); // Audio
   $('#volume_slider').slider('value', parseInt(keyConfig.audio.volume));
   $('#vol_val').text(`${keyConfig.audio.volume}%`);
   $(`input[name="audio_type"][value=${keyConfig.audio.type}]`).prop('checked', true);
-  $('#clr_path').val(keyConfig.clr.path);
+  $('#api_path').val(keyConfig.api.path); // API
+  $('#clr_path').val(keyConfig.clr.path); // CLR
   $('#clr_pos').val(keyConfig.clr.pos);
   $('#animate-open').val(keyConfig.clr.animate.open.type);
   $('#animate-close').val(keyConfig.clr.animate.close.type);
@@ -378,94 +451,54 @@ function setKeyOptions() {
   css_editor.setValue(keyConfig.clr.css);
   css_editor.clearSelection();
   checkmarks();
-}
-
-function getDefaultKeyConfig() { // Sets the default key config
-  return {
-    description: '',
-    color: {
-      press: 'OFF',
-      release: 'OFF',
-    },
-    hotkey: {
-      type: 'send',
-      string: '',
-    },
-    audio: {
-      path: '',
-      type: 'normal',
-      volume: '50',
-    },
-    clr: {
-      path: '',
-      pos: '',
-      animate: {
-        open: {
-          delay: '0.0',
-          type: 'fadeIn',
-          duration: '1.0',
-        },
-        close: {
-          delay: '2.0',
-          type: 'fadeOut',
-          duration: '1.0',
-        },
-      },
-      css: '.img {\n  width: 50%;\n}',
-    },
-  };
-}
-
-function getKeyConfig() { // Take all the key config values from the gui and save them to the settings config
-  return get(config, `keys.${lastKey.join(',')}`) || getDefaultKeyConfig(); // Get the key config or defaults
-}
-
-function removeUnusedKeys() { // This is to try and keep the config.json file as small as possible
-  const defaultConfig = getDefaultKeyConfig();
-  for (const i in config.keys) {
-    if (config.keys.hasOwnProperty(i)) {
-      if (_.isEqual(config.keys[i], defaultConfig)) {
-        delete config.keys[i];
-      }
-    }
-  }
-}
-
-function toTitleCase(color) {
-  color = color.toLowerCase();
-  const letter = color.slice(0, 1);
-  return color.replace(letter, letter.toUpperCase());
+  setIcons(lastKey, keyConfig);
 }
 
 function checkmarks() {
-  const thisKey = config.keys[lastKey.join(',')];
-  if (!thisKey) {
+  const keyConfig = getKeyConfig(lastKey);
+  if (!keyConfig) {
     $('.color .check_mark').hide();
     $('.hotkey .check_mark').hide();
     $('.audio .check_mark').hide();
+    $('.api_request .check_mark').hide();
     $('.clr_options .check_mark').hide();
     return;
   }
-  if (thisKey.color.press !== 'OFF' || thisKey.color.release !== 'OFF') {
+  if (keyConfig.color.press !== 'OFF' || keyConfig.color.release !== 'OFF') {
     $('.color .check_mark').show();
   } else {
     $('.color .check_mark').hide();
   }
-  if (thisKey.hotkey.string !== '') {
+  if (keyConfig.hotkey.string !== '') {
     $('.hotkey .check_mark').show();
   } else {
     $('.hotkey .check_mark').hide();
   }
-  if (thisKey.audio.path !== '') {
+  if (keyConfig.audio.path !== '') {
     $('.audio .check_mark').show();
   } else {
     $('.audio .check_mark').hide();
   }
-  if (thisKey.clr.path !== '') {
+  if (keyConfig.api.path !== '') {
+    $('.api_request .check_mark').show();
+  } else {
+    $('.api_request .check_mark').hide();
+  }
+  if (keyConfig.clr.path !== '') {
     $('.clr_options .check_mark').show();
   } else {
     $('.clr_options .check_mark').hide();
   }
+}
+
+function removeDefaultKeys(keys) { // This is to try and keep the config.json file as small as possible
+  const defaultConfig = defaultKeyConfig();
+  for (const key in keys) {
+    if (keys.hasOwnProperty(key)) {
+      if (_.isEqual(keys[key], defaultConfig)) delete keys[key];
+    }
+  }
+  return keys;
 }
 
 function sendImageChange(filePath, ext) {
@@ -480,6 +513,39 @@ function sendImageChange(filePath, ext) {
   });
 }
 
-function isURL(url) {
-  return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/.test(url); // eslint-disable-line
+function isURL(str) {
+  return /^(https?:\/\/)?(([\da-z\.-]+)\.([a-z\.]{2,6})|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(\:[0-9]*)?([\/\w \.-]*)*\/?(\?(\w+=\w*\&?)*)?$/ // eslint-disable-line
+    .test(str);
+}
+
+function toTitleCase(str) {
+  if (Array.isArray(str)) str = str.join(' ');
+  return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+}
+
+function setProp(obj, str, val) {
+  str = str.split('.');
+  while (str.length > 1) {
+    obj = obj[str.shift()];
+  }
+  obj[str.shift()] = val;
+}
+
+// Display notification on center of window that auto disappears and darkens the main content
+function centerNOTY(type, text, timeout) {
+  const blanket = $('.blanket');
+  blanket.fadeIn(200); // Darken the body
+  noty({ // Show NOTY
+    layout: 'center',
+    type: type,
+    text: text,
+    animation: {
+      open: 'animated flipInX', // Animate.css class names
+      close: 'animated flipOutX', // Animate.css class names
+    },
+    timeout: timeout || 1500,
+    callback: {
+      onClose: () => blanket.fadeOut(1000), // Restore body
+    },
+  });
 }

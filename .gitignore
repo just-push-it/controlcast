@@ -1,6 +1,7 @@
 .idea/
 node_modules/
 /dist/
-clr/assets/images/*
 /logs/
 /build/
+/app/clr/assets/images/*
+/npm-debug.log

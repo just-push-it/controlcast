@@ -2,13 +2,14 @@
 const logger = require('winston');
 const moment = require('moment');
 const fs = require('fs');
+const path = require('path');
 require('winston-loggly-bulk');
 
 module.exports = () => {
-  const logDir = '../logs';
-
-  // Create log directory if it does not exist
+  const logDir = path.join(process.env.APPDATA, 'ControlCast');
   if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
+  const logFolder = path.join(logDir, 'logs');
+  if (!fs.existsSync(logFolder)) fs.mkdirSync(logFolder);
 
   // Log to console
   logger.remove(logger.transports.Console);
@@ -20,7 +21,7 @@ module.exports = () => {
 
   // Log to file
   logger.add(logger.transports.File, {
-    filename: `${logDir}/-results.log`,
+    filename: path.join(logFolder, 'info.log'),
     json: false,
     level: 'info',
     prepend: true,
@@ -36,5 +37,6 @@ module.exports = () => {
     json: true,
   });
 
+  process.on('unhandledRejection', logger.error);
   return logger;
 };

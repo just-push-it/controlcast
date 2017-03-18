@@ -5,18 +5,22 @@
 /* eslint no-console: 0 */
 
 const tray = new Tray(path.join(__dirname, 'images/icon.ico'));
-
 const contextMenu = Menu.buildFromTemplate([
   {
     label: 'Restore',
     click: () => {
-      ipc.send('restore_main'); // Restore Main window
+      remote.getCurrentWindow().setSkipTaskbar(false); // Show Taskbar Icon
+      remote.getCurrentWindow().restore(); // Restore main window
+      remote.getCurrentWindow().focus(); // Focus Window
     },
   },
   {
     label: 'Reset Position',
     click: () => {
-      ipc.send('reset_position'); // Restore Main window
+      remote.getCurrentWindow().setSkipTaskbar(false); // Show Taskbar Icon
+      remote.getCurrentWindow().restore(); // Restore main window
+      remote.getCurrentWindow().setPosition(0, 0); // Move to main screen, 0,0
+      remote.getCurrentWindow().focus(); // Focus Window
     },
   },
   {
@@ -24,9 +28,7 @@ const contextMenu = Menu.buildFromTemplate([
   },
   {
     label: 'Exit',
-    click: () => { // Force quit app, ignores close to tray setting
-      ipc.send('force_quit');
-    },
+    click: () => ipc.send('force_quit'),
   },
 ]);
 
@@ -34,5 +36,11 @@ tray.setToolTip('ControlCast');
 tray.setContextMenu(contextMenu);
 
 tray.on('double-click', () => {
-  ipc.send('toggle_minimize'); // Toggle the minimize state of the app on double click on tray icon
+  if (remote.getCurrentWindow().isMinimized()) {
+    remote.getCurrentWindow().setSkipTaskbar(false); // Show Taskbar Icon
+    remote.getCurrentWindow().restore(); // Restore main window
+    remote.getCurrentWindow().focus(); // Focus Window
+  } else {
+    remote.getCurrentWindow().minimize(); // Minimize main window
+  }
 });
