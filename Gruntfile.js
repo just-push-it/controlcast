@@ -155,7 +155,9 @@ module.exports = (grunt) => {
   ]);
 
   grunt.registerTask('rename', 'Rename the Setup.exe file after building installer.', (platform, arch) => {
-    fs.rename(`./dist/win32/${arch}/Setup.exe`, `./dist/win32/${arch}/ControlCast_${appVersion}_${arch}.exe`);
+    fs.rename(`./dist/win32/${arch}/Setup.exe`, `./dist/win32/${arch}/ControlCast_${appVersion}_${arch}.exe`, err => {
+      if (err) console.error(err); // eslint-disable-line
+    });
   });
 
   grunt.registerTask('upload', [

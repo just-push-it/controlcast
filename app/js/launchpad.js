@@ -248,9 +248,7 @@ function sendAPI(key, action, keyConfig) {
   if (action === 'release') return;
   const api = keyConfig.api;
   if (!api || !api.path) return;
-  if (!api.path.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})(\:[0-9]*)?([\/\w \.-]*)*\/?$/)) { // eslint-disable-line
-    return;
-  }
+  if (!isURL(api.path)) return;
   const oldColor = keyConfig.color.release;
   keyConfig.color.release = 'YELLOW';
   colorKey(key, 'release', keyConfig);
@@ -274,7 +272,7 @@ function sendAPI(key, action, keyConfig) {
     setTimeout(() => {
       keyConfig.color.release = oldColor;
       colorKey(key, 'release', keyConfig);
-    }, 1000);
+    }, 1500);
   }
 
   function err() {
@@ -283,6 +281,6 @@ function sendAPI(key, action, keyConfig) {
     setTimeout(() => {
       keyConfig.color.release = oldColor;
       colorKey(key, 'release', keyConfig);
-    }, 1000);
+    }, 1500);
   }
 }

@@ -280,7 +280,7 @@ function readyOptions() {
   $('.api_request input').blur((event) => {
     const str = $(event.currentTarget).val();
     if (str === '') return;
-    if (!str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})(\:[0-9]*)?([\/\w \.-]*)*\/?$/)) { // eslint-disable-line
+    if (!isURL(str)) { // eslint-disable-line
       centerNOTY('notify', 'That is not a known web address format.', 4000);
     }
   });
@@ -513,8 +513,9 @@ function sendImageChange(filePath, ext) {
   });
 }
 
-function isURL(url) {
-  return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/.test(url); // eslint-disable-line
+function isURL(str) {
+  return /^(https?:\/\/)?(([\da-z\.-]+)\.([a-z\.]{2,6})|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(\:[0-9]*)?([\/\w \.-]*)*\/?(\?(\w+=\w*\&?)*)?$/ // eslint-disable-line
+    .test(str);
 }
 
 function toTitleCase(str) {
